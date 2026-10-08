@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Refugio Cuidador</string>
+    <string name="nav_contencion">Contención</string>
+    <string name="nav_mi_estado">Cómo Estoy</string>
+    <string name="nav_pausas">Respirar</string>
+    <string name="nav_crisis_limites">Apoyo SOS</string>
+    <string name="companion_subtitle_template">Tu espacio seguro · Solo para ti</string>
+    <string name="edit_avatar_content_desc">Personalizar el nombre de tu acompañante</string>
+    <string name="sos_button_label">Líneas de Crisis</string>
+    <string name="chat_input_placeholder">Suelta lo que pesas hoy… sin filtros ni juicios</string>
+    <string name="send_message_content_desc">Enviar mensaje</string>
+    <string name="bookmark_message_content_desc">Guardar mensaje en mi refugio</string>
+    <string name="new_conversation_content_desc">Reiniciar conversación</string>
+    <string name="quick_prompts_toggle">Soltar sin escribir mucho</string>
+    <string name="disclaimer_non_medical">Espacio de contención emocional para el cuidador. No sustituye atención médica ni psicoterapia ni emite opiniones sobre tratamientos oncológicos.</string>
+</resources>

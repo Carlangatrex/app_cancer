@@ -1,0 +1,6 @@
+{
+  "name": "Refugio Cuidador",
+  "description": "Acompañante virtual de contención emocional, validación sin juicios y micro-regulación para el cuidador primario de un paciente con cáncer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

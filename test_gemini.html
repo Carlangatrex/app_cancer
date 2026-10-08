@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alma - Acompañante Emocional</title>
+  <meta name="description" content="Acompañante emocional para cuidadores de personas con cáncer. Un espacio seguro para descargar el peso, la rabia y el cansancio del que cuida.">
+  <meta name="theme-color" content="#6750a4">
+  <meta name="application-name" content="Alma">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --on-surface: #1a1a1a;
+      --primary: #6750a4;
+      --primary-container: #d0c4e7;
+      --on-primary: #ffffff;
+      --secondary: #42a5f5;
+      --secondary-container: #c8e6c9;
+      --on-secondary: #ffffff;
+      --error: #ef5350;
+      --error-container: #fce4ec;
+      --on-error: #ffffff;
+      --surface-variant: #e0e0e0;
+      --on-surface-variant: #212121;
+      --outline: #757575;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--on-surface);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container { max-width: 800px; margin: 0 auto; }
+
+    /* --- Onboarding Screen --- */
+    .onboarding-screen {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 40px 24px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin: 20px auto;
+      max-width: 400px;
+      position: relative;
+    }
+
+    .onboarding-screen h2 { margin: 0 0 12px; font-size: 20px; }
+    .onboarding-screen p { margin: 0 0 24px; font-size: 14px; color: var(--on-surface-variant); line-height: 1.5; }
+
+    .companion-name-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--outline);
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: var(--on-surface);
+      background: var(--bg);
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+      font-weight: 500;
+    }
+
+    .companion-name-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-container);
+    }
+
+    .companion-name-input::placeholder { color: var(--on-surface-variant); }
+
+    .start-btn {
+      width: 100%;
+      padding: 12px 24px;
+      background: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .start-btn:hover { background: #553c95; }
+    .start-btn:focus { outline: none; box-shadow: 0 0 0 3px var(--primary-container); }
+
+    /* --- Chat Area (hidden until onboarding done) --- */
+    .chat-area { display: none; }
+
+    .header {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 20px 24px 20px 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .avatar-display {
+      width: 64px; height: 64px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      overflow: hidden;
+      box-shadow: 0 0 0 2px var(--secondary-container);
+    }
+    .avatar-icon { width: 100%; height: 100%; display: block; }
+
+    .avatar-info {
+      display: flex; flex-direction: column; align-items: flex-start;
+      /* Evita que crezca y ocupe todo el ancho disponible */
+      flex: 0 0 auto;
+    }
+    .avatar-info h2 { margin: 0; font-size: 17px; font-weight: 500; color: var(--on-surface); }
+    .avatar-info p { margin: 2px 0 0; font-size: 11px; color: var(--on-surface-variant); }
+
+    .header-actions {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .sos-button {
+      background: #E53935;
+      color: white;
+      border: none;
+      border-radius: 28px;
+      padding: 8px 20px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 96px;
+      flex-shrink: 0;
+      transition: background 0.2s;
+      box-shadow: 0 2px 6px rgba(229, 57, 53, 0.4);
+    }
+    .sos-button:hover {
+      background: #FF5252;
+    }
+    .sos-button:active {
+      background: #CF132A;
+      box-shadow: 0 4px 8px rgba(229, 57, 53, 0.5);
+    }
+    .sos-button:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.3);
+    }
+
+    .messages {
+      height: 500px; overflow-y: auto; background: var(--surface);
+      border-radius: 16px; padding: 20px; margin-bottom: 20px; min-height: 400px;
+    }
+
+    .message {
+      max-width: 80%; padding: 12px 16px; border-radius: 16px; margin-bottom: 12px; line-height: 1.5;
+    }
+    .message.model { margin-left: auto; background: var(--primary-container); color: var(--on-primary); }
+    .message.user { margin-right: auto; background: var(--secondary-container); color: var(--on-secondary); }
+
+    .emotion-badge {
+      display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-validated { background: var(--secondary-container); color: var(--secondary); }
+    .badge-crisis { background: var(--error-container); color: var(--error); }
+
+    /* Tarjeta de crisis: la pinta el código, nunca el modelo. */
+    .crisis-card {
+      background: var(--error-container); border: 1px solid var(--error);
+      border-radius: 16px; padding: 14px 16px; margin-bottom: 12px;
+      max-width: 80%; font-size: 14px; line-height: 1.5; color: var(--on-surface);
+    }
+    .crisis-card h4 { margin: 0 0 6px; font-size: 15px; color: var(--error); }
+    .crisis-card .crisis-entrada { margin: 0 0 10px; font-size: 13px; }
+    .crisis-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+    .crisis-card li { font-size: 13px; }
+    .crisis-card li a { color: var(--error); font-weight: 700; text-decoration: none; }
+    .crisis-card li a:hover { text-decoration: underline; }
+    .crisis-card .crisis-notas { margin-top: 10px; font-size: 11px; color: var(--on-surface-variant); }
+
+    /* Input area */
+    .input-bar {
+      background: var(--surface); border-radius: 24px; padding: 12px 16px; display: flex; gap: 10px; align-items: center;
+    }
+    .text-field {
+      flex: 1; border: none; font-family: 'Inter', sans-serif; font-size: 15px; resize: none; min-height: 40px; color: var(--on-surface);
+      ::placeholder { color: var(--on-surface-variant); }
+    }
+    .text-field:focus { outline: none; }
+    .send-button {
+      width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: var(--on-primary); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+    }
+    .send-button:hover { background: #553c95; }
+    .send-button:active { background: #452e81; }
+    .send-button:disabled { background: var(--outline); cursor: not-allowed; }
+
+    .voice-button {
+      width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+      background: transparent; color: var(--on-surface-variant);
+      border: 1.5px solid var(--outline); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .voice-button:hover { background: var(--surface-variant); color: var(--on-surface); }
+    .voice-button.listening {
+      background: var(--error); border-color: var(--error); color: #fff;
+      animation: pulse-mic 1.2s ease-in-out infinite;
+    }
+    .voice-button.listening:hover { background: var(--error); }
+
+    /* Panel de grabación */
+    .rec-panel {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface); border: 1.5px solid var(--error);
+      border-radius: 24px; padding: 8px 10px 8px 16px; margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .rec-panel[hidden] { display: none; }
+    .rec-dot {
+      width: 10px; height: 10px; border-radius: 50%; background: var(--error);
+      flex-shrink: 0; animation: rec-blink 1s ease-in-out infinite;
+    }
+    .rec-dot.paused { animation: none; background: var(--outline); }
+    @keyframes rec-blink { 50% { opacity: 0.2; } }
+    .rec-label {
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--error);
+      white-space: nowrap;
+    }
+    .rec-label.paused { color: var(--on-surface-variant); }
+    .rec-time {
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      color: var(--on-surface-variant); font-variant-numeric: tabular-nums;
+      margin-right: auto;
+    }
+    .rec-actions { display: flex; gap: 8px; }
+    .rec-btn {
+      width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--outline);
+      background: transparent; color: var(--on-surface); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+    }
+    .rec-btn:hover { background: var(--surface-variant); }
+    .rec-btn-danger:hover { background: var(--error-container); border-color: var(--error); color: var(--error); }
+    .rec-btn-send { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+    .rec-btn-send:hover { background: #553c95; border-color: #553c95; }
+    .voice-button.paused-state { background: var(--surface-variant); border-color: var(--on-surface-variant); color: var(--on-surface); }
+
+    @keyframes pulse-mic {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.5); }
+      50% { box-shadow: 0 0 0 8px rgba(229, 57, 53, 0); }
+    }
+
+    .header-icon-btn {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      background: transparent; color: var(--on-surface-variant);
+      border: 1.5px solid var(--outline); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .header-icon-btn:hover { background: var(--surface-variant); color: var(--on-surface); }
+    .header-icon-btn.active {
+      background: var(--secondary-container); border-color: var(--secondary-container);
+      color: var(--on-surface);
+    }
+
+    .voice-gender {
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+      color: var(--on-surface-variant); background: var(--surface);
+      border: 1.5px solid var(--outline); border-radius: 16px;
+      padding: 7px 8px; cursor: pointer; max-width: 132px; height: 40px;
+      transition: all 0.2s; appearance: auto;
+    }
+    .voice-gender:hover { background: var(--surface-variant); color: var(--on-surface); }
+    .voice-gender:focus { outline: none; border-color: var(--primary); }
+
+    .quick-prompts { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+    .quick-prompt {
+      background: var(--surface-variant); color: var(--on-surface-variant); border: 1px solid var(--outline); border-radius: 20px; padding: 8px 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;
+    }
+    .quick-prompt:hover { background: var(--outline); color: var(--on-surface); }
+    .quick-prompt.active { background: var(--primary); color: var(--on-primary); }
+
+    .status { padding: 12px 16px; background: var(--surface-variant); border-radius: 12px; margin-bottom: 16px; font-size: 13px; }
+    .loading { display: flex; align-items: center; gap: 8px; }
+
+    @media (max-width: 480px) {
+      .container { margin: 10px; }
+      .messages { height: 400px; }
+      .message { max-width: 90%; }
+      .input-bar { padding: 8px 12px; }
+      .text-field { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- --- Onboarding Screen: asks for companion name --- -->
+    <div class="onboarding-screen" id="onboarding-screen">
+      <h2>Bienvenid/a a Alma</h2>
+      <p>Para personalizar tu experiencia, ¿cómo quieres llamar a tu acompañante virtual?</p>
+      
+      <input type="text" class="companion-name-input" id="companion-name" value="Alma">
+      <button class="start-btn" onclick="startApp()">Comenzar</button>
+    </div>
+
+    <!-- --- Chat Area (shown after onboarding) --- -->
+    <div class="chat-area" id="chat-area">
+      <!-- Header con avatar y acciones -->
+      <div class="header">
+        <div class="avatar-display">
+          <img src="gemini-svg.svg" alt="Avatar del acompañante" class="avatar-icon" />
+        </div>
+        <div class="avatar-info">
+          <h2 id="companion-title" class="editable-name" onclick="editCompanionName()" tabindex="0" role="button" title="Clic para cambiar el nombre">Alma</h2>
+          <span class="edit-icon" onclick="event.stopPropagation(); editCompanionName()">✎</span>
+          <p>Acompañante virtual</p>
+        </div>
+        <div class="header-actions">
+          <button class="header-icon-btn" id="new-chat-button" onclick="nuevaConversacion()" title="Nueva conversación" aria-label="Nueva conversación">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </button>
+          <select class="voice-gender" id="voice-gender" onchange="cambiarVozGenero(this.value)" aria-label="Tono de voz" title="Tono de la voz del acompañante">
+            <option value="auto">Voz automática</option>
+            <option value="femenina">Voz femenina</option>
+            <option value="masculina">Voz masculina</option>
+          </select>
+          <button class="header-icon-btn" id="speak-button" onclick="toggleSpeakAloud()" aria-label="Leer respuestas en voz alta" title="Leer respuestas en voz alta">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+          </button>
+          <button class="sos-button" onclick="showCrisisSupport()">SOS</button>
+        </div>
+      </div>
+
+      <!-- Mensajes -->
+      <div class="messages" id="messages"></div>
+
+      <!-- Panel de grabación activa -->
+      <div class="rec-panel" id="rec-panel" hidden>
+        <span class="rec-dot" id="rec-dot"></span>
+        <span class="rec-label" id="rec-label">Grabando</span>
+        <span class="rec-time" id="rec-time">0:00</span>
+        <div class="rec-actions">
+          <button class="rec-btn" id="rec-pause" onclick="togglePauseRecording()" title="Pausar" aria-label="Pausar grabación"></button>
+          <button class="rec-btn rec-btn-danger" onclick="discardRecording()" title="Descartar" aria-label="Descartar grabación">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          <button class="rec-btn rec-btn-send" onclick="sendRecording()" title="Enviar mensaje" aria-label="Enviar mensaje">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de entrada -->
+      <div class="input-bar" id="input-bar">
+        <button class="voice-button" id="voice-button" onclick="toggleVoiceInput()" aria-label="Dictar por voz" title="Dictar por voz">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+        </button>
+        <textarea 
+          class="text-field" 
+          id="user-input" 
+          placeholder="Cuéntale a tu acompañante cómo estás hoy…"
+          rows="1"
+          oninput="this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'"
+        ></textarea>
+        <button class="send-button" id="send-button" onclick="sendMessage()" aria-label="Enviar mensaje">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Prompts rápidos -->
+      <div class="quick-prompts" id="quick-prompts">
+        <div class="quick-prompt" onclick="sendPrompt('rabia')">Rabia familiar</div>
+        <div class="quick-prompt" onclick="sendPrompt('culpa')">Culpa propia</div>
+        <div class="quick-prompt" onclick="sendPrompt('invisible')">Me siento invisible</div>
+        <div class="quick-prompt" onclick="sendPrompt('fuerte')">Frases hechas</div>
+      </div>
+
+      <!-- Estado -->
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    // Configuración
+    // La API key vive en config.js (gitignored), nunca en este archivo.
+    const API_KEY = (typeof window.GEMINI_API_KEY === 'string' ? window.GEMINI_API_KEY : '').trim();
+    if (!API_KEY) console.warn('API key no configurada: crea config.js con GEMINI_API_KEY.');
+    const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
+
+    // Rotación de modelos. Se quita cualquiera que devuelva 404 para esta clave.
+    let modelosDisponibles = [
+      "gemini-flash-lite-latest",
+      "gemini-3.5-flash-lite",
+      "gemini-3.5-flash",
+      "gemini-flash-latest"
+    ];
+
+    const TIMEOUT_PETICION = 20000;   // sin esto fetch se cuelga indefinidamente
+    const INTENTOS_MAX = 8;
+    const dormir = (ms) => new Promise(r => setTimeout(r, ms));
+
+    async function llamarGemini(payload) {
+      const fallos = new Set();
+
+      for (let i = 0; i < INTENTOS_MAX && modelosDisponibles.length > 0; i++) {
+        const modelo = modelosDisponibles[i % modelosDisponibles.length];
+        const ctrl = new AbortController();
+        const reloj = setTimeout(() => ctrl.abort(), TIMEOUT_PETICION);
+
+        try {
+          const res = await fetch(`${API_BASE}${modelo}:generateContent?key=${API_KEY}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: ctrl.signal
+          });
+
+          let data;
+          try {
+            data = await res.json();
+          } catch (parseErr) {
+            fallos.add('json');
+            await dormir(600);
+            continue;
+          }
+          clearTimeout(reloj);
+
+          if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+            return data;
+          }
+
+          const codigo = (data.error && data.error.code) || res.status;
+          const mensaje = (data.error && data.error.message) || 'respuesta inesperada';
+
+          // 404 = el modelo no existe para esta clave: no volver a probarlo
+          if (codigo === 404) {
+            modelosDisponibles = modelosDisponibles.filter(m => m !== modelo);
+            fallos.add('404');
+            continue;
+          }
+
+          fallos.add(String(codigo));
+
+          // Sobrecarga / límite de uso: esperar creciente y probar otro modelo
+          if (codigo === 429 || codigo === 503 || codigo === 500 || codigo === 408) {
+            await dormir(700 + i * 600);
+            continue;
+          }
+
+          throw new Error(`${codigo}: ${mensaje}`);
+
+        } catch (e) {
+          clearTimeout(reloj);
+
+          if (e.name === 'AbortError') {
+            fallos.add('timeout');
+            await dormir(500);
+            continue;
+          }
+          // Error real (permisos, petición malformada, etc.): no tiene sentido reintentar
+          console.error('Error llamando a Gemini:', e);
+          throw new Error('No pude procesar la petición. Revisa la consola del navegador.');
+        }
+      }
+
+      console.warn('Modelos agotados. Fallos:', [...fallos].join(', '));
+      const saturado = fallos.has('503') || fallos.has('429') || fallos.has('timeout') || fallos.has('json');
+      const err = new Error(saturado
+        ? 'El servicio de IA está saturado en este momento. Espera unos segundos y vuelve a intentarlo.'
+        : 'No pude generar una respuesta ahora mismo. Vuelve a intentarlo en un momento.');
+      throw err;
+    }
+
+    // Igual que llamarGemini, pero la respuesta llega por trozos (SSE) y se
+    // va pintando en la burbuja conforme llega. Devuelve el texto completo.
+    async function llamarGeminiStream(payload, onChunk) {
+      const fallos = new Set();
+
+      for (let i = 0; i < INTENTOS_MAX && modelosDisponibles.length > 0; i++) {
+        const modelo = modelosDisponibles[i % modelosDisponibles.length];
+        const ctrl = new AbortController();
+        let reloj = setTimeout(() => ctrl.abort(), TIMEOUT_PETICION);
+        const renovar = () => {
+          clearTimeout(reloj);
+          reloj = setTimeout(() => ctrl.abort(), TIMEOUT_PETICION);
+        };
+        let texto = '';
+
+        try {
+          const res = await fetch(`${API_BASE}${modelo}:streamGenerateContent?alt=sse&key=${API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: ctrl.signal
+          });
+          renovar();
+
+          if (!res.ok || !res.body) {
+            let codigo = res.status;
+            let mensaje = 'respuesta inesperada';
+            try {
+              const errJson = await res.json();
+              codigo = (errJson.error && errJson.error.code) || res.status;
+              mensaje = (errJson.error && errJson.error.message) || mensaje;
+            } catch (_) { /* cuerpo no JSON */ }
+            clearTimeout(reloj);
+
+            if (codigo === 404) {
+              modelosDisponibles = modelosDisponibles.filter(m => m !== modelo);
+              fallos.add('404');
+              continue;
+            }
+            fallos.add(String(codigo));
+            if (codigo === 429 || codigo === 503 || codigo === 500 || codigo === 408) {
+              await dormir(700 + i * 600);
+              continue;
+            }
+            throw new Error(`${codigo}: ${mensaje}`);
+          }
+
+          const lector = res.body.getReader();
+          const decodificador = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await lector.read();
+            if (done) break;
+            renovar();
+            buffer += decodificador.decode(value, { stream: true });
+
+            let fin;
+            while ((fin = buffer.indexOf('\n')) !== -1) {
+              const linea = buffer.slice(0, fin).trim();
+              buffer = buffer.slice(fin + 1);
+              if (linea.indexOf('data:') !== 0) continue;
+
+              const cuerpo = linea.slice(5).trim();
+              if (!cuerpo || cuerpo === '[DONE]') continue;
+
+              let trozo;
+              try { trozo = JSON.parse(cuerpo); } catch (_) { continue; }
+
+              if (trozo.error) {
+                clearTimeout(reloj);
+                throw new Error(`${trozo.error.code || 'stream'}: ${trozo.error.message}`);
+              }
+
+              const cand = trozo.candidates && trozo.candidates[0];
+              const partes = cand && cand.content && cand.content.parts;
+              if (partes && partes[0] && typeof partes[0].text === 'string') {
+                texto += partes[0].text;
+                onChunk(texto);
+              }
+            }
+          }
+          clearTimeout(reloj);
+
+          if (texto) return texto;
+
+          fallos.add('vacio');
+          await dormir(600);
+          continue;
+
+        } catch (e) {
+          clearTimeout(reloj);
+
+          if (e.name === 'AbortError') {
+            fallos.add('timeout');
+            await dormir(500);
+            continue;
+          }
+          console.error('Error en el stream de Gemini:', e);
+          throw e;
+        }
+      }
+
+      console.warn('Modelos agotados (stream). Fallos:', [...fallos].join(', '));
+      const saturado = fallos.has('503') || fallos.has('429') || fallos.has('timeout') || fallos.has('json');
+      throw new Error(saturado
+        ? 'El servicio de IA está saturado en este momento. Espera unos segundos y vuelve a intentarlo.'
+        : 'No pude generar una respuesta ahora mismo. Vuelve a intentarlo en un momento.');
+    }
+
+    // Estado
+    let isSending = false;
+    let historial = [];
+    let resumenContexto = '';   // memoria comprimida de lo ya hablado (turnos 0..N)
+    let resumiendo = false;     // evita dos resúmenes a la vez
+    let companionName = localStorage.getItem('companionName') || 'Alma';
+
+    // Elementos DOM
+    const onboardingScreen = document.getElementById('onboarding-screen');
+    const chatArea = document.getElementById('chat-area');
+    const companionTitle = document.getElementById('companion-title');
+    const messagesDiv = document.getElementById('messages');
+    const userInput = document.getElementById('user-input');
+    const inputBar = document.getElementById('input-bar');
+    const statusDiv = document.getElementById('status');
+
+    // La inicialización vive al final del script (bloque "// Inicializar").
+    // Aquí NO se llama showChat(): dispararía la restauración dos veces
+    // y ocultaría el onboarding en un equipo nuevo.
+
+    // Empezar/app después de poner nombre
+    function startApp() {
+      const nameInput = document.getElementById('companion-name');
+      const name = nameInput.value.trim() || 'Alma';
+
+      companionName = name;
+      localStorage.setItem('companionName', name);
+
+      // Actualizar UI
+      onboardingScreen.style.display = 'none';
+      chatArea.style.display = 'block';
+
+      // Actualizar título en header
+      companionTitle.textContent = companionName;
+
+      // Agregar mensaje de bienvenida personalizado UNA sola vez
+      historial = [];
+      try { localStorage.removeItem(CLAVE_HISTORIAL); } catch (e) {}
+      messagesDiv.innerHTML = '';
+      addWelcomeMessage();
+
+      // Enfocar input
+      userInput.focus();
+    }
+
+    // Agregar mensaje de bienvenida visible (solo UI, NO va al historial)
+    function addWelcomeMessage() {
+      const alreadyThere = messagesDiv.querySelector('.welcome-personalized');
+      if (alreadyThere) return;
+
+      const div = document.createElement('div');
+      div.className = 'message model welcome-personalized';
+      div.innerHTML = `
+        <p>Hola. Estoy aquí contigo. Sé que cuidar a un ser querido es una tarea agotadora y muchas veces solitaria. Este es tu espacio seguro, ¿cómo te sientes en este momento?</p>
+      `;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Agregar mensaje a la interfaz
+    function addMessage(text, isUser = false, emotion = null) {
+      const div = document.createElement('div');
+      div.className = `message ${isUser ? 'user' : 'model'}`;
+      
+      let emotionBadge = '';
+      if (emotion) {
+        emotionBadge = `<span class="emotion-badge ${BADGE_CLASSES[emotion] || ''}">${emotion}</span>`;
+      }
+
+      div.innerHTML = `<p>${text}</p>${emotionBadge}`;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Burbuja viva durante el streaming. Solo aparece cuando llega el primer
+    // trozo, para no dejar un hueco en blanco mientras la API piensa.
+    function crearBurbujaStreaming() {
+      removeTypingIndicator();
+      const div = document.createElement('div');
+      div.className = 'message model';
+      div.id = 'streaming-message';
+      div.innerHTML = '<p></p>';
+      messagesDiv.appendChild(div);
+      return div;
+    }
+
+    function pintarStreaming(div, texto) {
+      const p = div.querySelector('p');
+      // textContent y no innerHTML: el texto viene del modelo, no se interpreta
+      if (p) p.textContent = texto;
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Mostrar estado
+    function setStatus(message, isError = false) {
+      statusDiv.textContent = message;
+      statusDiv.style.background = isError ? 'var(--error-container)' : 'var(--surface-variant)';
+      statusDiv.style.color = isError ? 'var(--error)' : 'var(--on-surface-variant)';
+      statusDiv.style.display = 'block';
+      setTimeout(() => statusDiv.style.display = 'none', 3000);
+    }
+
+    // Enviar prompt rápido
+    function sendPrompt(type) {
+      const promptMap = {
+        'rabia': 'Siento toda la rabia del mundo por ver que otros siguen con su vida mientras yo pongo el cuerpo, el tiempo y el sueño. Cargar con los turnos, las esperas y las decisiones sin relevo justo es agotador y no tengo por qué justificar a nadie hoy.',
+        'culpa': 'Siento completamente humano desear que este desgaste termine ya, y sentir eso no me quita ni un gramo de amor por mi familiar. Significa que llevo demasiado tiempo en alerta máxima sosteniendo hospitales, miedos y cansancio acumulado en el cuerpo.',
+        'invisible': 'Duele muchísimo volverse transparente cuando todo el mundo pregunta por el paciente y nadie ve las ojeras ni el nudo en la garganta que yo traigo. Estar ahí manejando, esperando en pasillos y resolviendo cada imprevisto es un trabajo gigante que yo sí veo y reconozco.',
+        'fuerte': 'Qué hartazgo da escuchar frases hechas de gente que no pasa las horas en la silla del hospital ni lleva el peso real en la espalda. Lo que hago cada día —estar presente en la quimio, sostener la incertidumbre y seguir de pie— ya es descomunal sin que nadie me exija sonreír.'
+      };
+
+      if (promptMap[type]) {
+        userInput.value = promptMap[type];
+        sendMessage();
+      }
+    }
+
+    // Construye el payload completo. `evitaRepetir` añade un aviso duro y
+    // sube la temperatura, para forzar un arranque distinto al anterior.
+    function prepararPayload(texto, evitaRepetir) {
+      const contents = historial.slice(-10)
+        .filter((turn, i, arr) => !(i === 0 && turn.role === 'model'))
+        .map(turn => ({
+          role: turn.role,
+          parts: [{ text: turn.text }]
+        }));
+
+      // Memoria de lo ya hablado: si el chat es largo, los turnos viejos van
+      // comprimidos por resumirContexto() en vez de completos.
+      if (resumenContexto) {
+        contents.unshift({
+          role: 'user',
+          parts: [{ text: '[Resumen de los turnos anteriores a esto] ' + resumenContexto }]
+        });
+      }
+
+      // Gemini rechaza 400 si la petición termina en turno "model"
+      while (contents.length > 1 && contents[contents.length - 1].role !== 'user') {
+        contents.pop();
+      }
+
+      let sistema = getSystemPrompt();
+      let temperatura = 1.0;
+
+      if (evitaRepetir) {
+        sistema += `
+
+== AVISO URGENTE ==
+Tu intento anterior se parecía a algo ya dicho: o repetías un arranque tuyo previo, o copiabas una frase de los ejemplos. Escribe un inicio totalmente distinto: otra primera palabra, otra estructura de frase, otro ritmo. No reorganicés la frase vieja; tírala y empieza de otra manera.`;
+        temperatura = 1.2;
+      }
+
+      return {
+        systemInstruction: { parts: [{ text: sistema }] },
+        contents: contents,
+        generationConfig: {
+          temperature: temperatura,
+          maxOutputTokens: 300,
+          topP: 0.95
+        }
+      };
+    }
+
+    // Comprime los turnos antiguos en notas de contexto para que un chat largo
+    // no pierda continuidad ni rebase la ventana. Corre en paralelo DESPUÉS de
+    // responder: si la API falla aquí, la conversación sigue intacta en memoria
+    // y el resumen se reintenta en el siguiente disparador.
+    async function resumirContexto() {
+      if (resumiendo) return false;
+      resumiendo = true;
+      try {
+        const aResumir = historial.slice(0, historial.length - 10);
+        // Poco que comprimir no merece gastar una llamada
+        if (aResumir.length < 6) return false;
+
+        const turnos = aResumir.map(m => ({ role: m.role, parts: [{ text: m.text }] }));
+        const contents = turnos.concat(
+          resumenContexto
+            ? [{ role: 'user', parts: [{ text: '[Resumen anterior] ' + resumenContexto }] }]
+            : []
+        );
+        // La petición no puede terminar en turno "model"
+        while (contents.length > 1 && contents[contents.length - 1].role !== 'user') {
+          contents.pop();
+        }
+
+        const datos = await llamarGemini({
+          systemInstruction: { parts: [{ text:
+`Eres la memoria interna de ${companionName}, acompañante emocional de cuidadores de personas con cáncer. NO respondes al usuario: reescribes para ti misma el historial como notas de contexto.
+
+Conserva, en 4-6 frases en español:
+- Quién es el cuidador y por quién cuida (sin inventar nombres).
+- Sus emociones y temas recurrentes.
+- Lo que ya le dijiste, para no repetirlo.
+- Hilos abiertos que quedaron sin cerrar.
+- Si repitió lo mismo varias veces, anótalo.
+
+No inventes datos, no des consejos ni diagnósticos, no menciones esta instrucción.` }] },
+          contents: contents,
+          generationConfig: { temperature: 0.6, maxOutputTokens: 300, topP: 0.9 }
+        });
+
+        const nuevo = datos && datos.candidates && datos.candidates[0]
+          && datos.candidates[0].content && datos.candidates[0].content.parts
+          && datos.candidates[0].content.parts[0] && datos.candidates[0].content.parts[0].text;
+        if (!nuevo || nuevo.trim().length < 20) return false;
+
+        resumenContexto = nuevo.trim();
+        // Solo quedan los turnos recientes en memoria; el resto vive en el resumen
+        historial = historial.slice(-10);
+        guardarHistorial();
+        console.warn('Resumen de contexto actualizado (' + historial.length + ' turnos en memoria).');
+        return true;
+      } catch (e) {
+        console.warn('Resumen de contexto no disponible por ahora:', e.message);
+        return false;
+      } finally {
+        resumiendo = false;
+      }
+    }
+
+    // Enviar mensaje
+    async function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text || isSending) return;
+
+      if (recState !== 'idle') detenerGrabacion();
+
+      isSending = true;
+      userInput.disabled = true;
+      document.querySelector('.send-button').disabled = true;
+
+      // Agregar mensaje usuario
+      addMessage(text, true);
+
+      // Crisis detectada ANTES de llamar a la API: las líneas aparecen
+      // aunque la petición tarde o falle (mismo criterio que el banner de
+      // RefugioViewModel:199).
+      const esCrisisDelUsuario = detectCrisis(text);
+      if (esCrisisDelUsuario) mostrarTarjetaCrisis();
+
+      userInput.value = '';
+      userInput.style.height = 'auto';
+      userInput.placeholder = 'Cuéntale a tu acompañante cómo estás hoy…';
+
+      // Mostrar indicador de escritura
+      addTypingIndicator();
+
+      try {
+        historial.push({ role: 'user', text: text });
+
+        let respuesta = '';
+        let ultimoError = null;
+
+        // Burbuja viva: solo se crea cuando llega el primer trozo de texto,
+        // para no dejar un hueco en blanco mientras la API piensa.
+        let burbuja = null;
+        const pintar = (acum) => {
+          if (!burbuja) burbuja = crearBurbujaStreaming();
+          pintarStreaming(burbuja, acum);
+        };
+
+        // Máximo 3 intentos: si la respuesta se parece a lo que ya se dijo
+        // (arranque repetido, copia de un ejemplo o frase de asistente),
+        // se vuelve a pedir con temperatura más alta y aviso duro.
+        for (let intento = 0; intento < 3 && !respuesta; intento++) {
+          const payload = prepararPayload(text, intento > 0);
+          let candidata = '';
+
+          try {
+            candidata = await llamarGeminiStream(payload, pintar);
+          } catch (eStream) {
+            // Si el stream se cae, se reintenta con la llamada clásica.
+            console.warn('Stream falló, pruebo con generateContent:', eStream.message);
+            const data = await llamarGemini(payload);
+            ultimoError = data;
+            const valido = data && data.candidates && data.candidates[0]
+              && data.candidates[0].content && data.candidates[0].content.parts
+              && data.candidates[0].content.parts[0];
+
+            if (!valido) break;   // error de API: lo trata el else de abajo
+
+            candidata = data.candidates[0].content.parts[0].text;
+            pintar(candidata);
+          }
+
+          const mala = arranqueRepetido(candidata)
+            || copiaEjemplo(candidata)
+            || fraseProhibida(candidata);
+          if (!mala || intento > 1 || esCrisisDelUsuario) {
+            // En crisis se acepta la primera respuesta aunque suene a lo de
+            // siempre: reescribir una respuesta de crisis es retrasar ayuda.
+            // En el último intento también se acepta pase lo que pase:
+            // mejor una respuesta algo repetida que ninguna.
+            respuesta = sanitizarCliches(candidata);
+          } else {
+            console.warn('Respuesta descartada (repetición o frase de asistente), releyendo…');
+            pintar('releyendo…');
+          }
+        }
+
+        // La burbuja viva se cambia por la definitiva en la misma tarea:
+        // el navegador no llega a pintarlas por separado, así que no parpadea.
+        removeTypingIndicator();
+        if (burbuja) burbuja.remove();
+
+        if (respuesta) {
+          historial.push({ role: 'model', text: respuesta });
+          addMessage(respuesta, false);
+          speakText(respuesta);
+
+          // Detectar emoción (simplificado)
+          const emotion = detectEmotion(text);
+          if (emotion) {
+            const lastMsg = messagesDiv.lastElementChild;
+            if (lastMsg) {
+              lastMsg.innerHTML = `<p>${respuesta}</p><span class="emotion-badge ${BADGE_CLASSES[emotion] || 'badge-validated'}">${emotion}</span>`;
+            }
+          }
+
+          // Crisis detectada en la respuesta del modelo (no en la del usuario:
+          // esa ya pintó la tarjeta antes de llamar a la API).
+          if (!esCrisisDelUsuario && detectCrisis(respuesta)) mostrarTarjetaCrisis();
+        } else {
+          historial.pop();
+          const errMsg = ultimoError && ultimoError.error
+            ? `${ultimoError.error.code}: ${ultimoError.error.message}`
+            : 'no llegó ninguna respuesta';
+          console.error('Sin respuesta válida:', ultimoError);
+          addMessage(`Error de la API -> ${errMsg}`, false);
+        }
+
+      } catch (error) {
+        historial.pop();
+        removeTypingIndicator();
+        const vivo = document.getElementById('streaming-message');
+        if (vivo) vivo.remove();
+        console.error('Error de Gemini:', error);
+        addMessage(error.message || 'No pude conectarme con la API.', false);
+      }
+
+      guardarHistorial();
+
+      // Chat largo: comprimir lo viejo en segundo plano (no bloquea la UI)
+      if (historial.length >= 18) resumirContexto();
+
+      isSending = false;
+      userInput.disabled = false;
+      document.querySelector('.send-button').disabled = false;
+      userInput.focus();
+    }
+
+    // Normaliza un texto a sus primeras palabras en minúsculas.
+    // Sirve para comparar arranques entre respuestas distintas.
+    function arranqueTexto(texto, n = 7) {
+      return String(texto || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s"]/gu, ' ')
+        .replace(/\s+/g, ' ')
+        .split(' ')
+        .slice(0, n)
+        .join(' ');
+    }
+
+    // ¿Este arranque ya se usó en las últimas respuestas del modelo?
+    function arranqueRepetido(texto) {
+      const nuevo = arranqueTexto(texto);
+      if (!nuevo) return false;
+      return historial
+        .filter(m => m.role === 'model')
+        .slice(-6)
+        .some(m => arranqueTexto(m.text) === nuevo);
+    }
+
+    // Los ejemplos de voz del prompt sirven para el estilo; el modelo a veces
+    // se los termina copiando. Si la respuesta sale igual, se pide otra vez.
+    const FRASES_DE_EJEMPLO = [
+      'ya ni recuerdas qué se siente dormir',
+      'tres semanas sosteniendo todo',
+      'deja eso. diez minutos sin hacer nada',
+      'se instala en tus hombros',
+      'merece ser escuchada sin juicio'
+    ];
+
+    function copiaEjemplo(texto) {
+      const baja = String(texto || '').toLowerCase();
+      return FRASES_DE_EJEMPLO.some(f => baja.includes(f));
+    }
+
+    // Fórmulas de asistente que el prompt prohíbe y el modelo a veces suelta
+    // igual. Si sale alguna, se pide la respuesta otra vez.
+    const FRASES_PROHIBIDAS = [
+      'sé fuerte', 'ánimo', 'no te preocupes', 'todo va a salir bien',
+      'respirar hondo', 'aquí estoy', 'sin prisa', 'qué bueno',
+      'merece ser escuchada', 'escucharte sin juicio',
+      'el peso de', 'pesa el doble', 'en los hombros',
+      'la carga invisible', 'tu proceso'
+    ];
+
+    function fraseProhibida(texto) {
+      const baja = String(texto || '').trim().toLowerCase();
+      if (!baja) return false;
+      if (FRASES_PROHIBIDAS.some(f => baja.includes(f))) return true;
+      if (/¿\s*(cómo estás|cómo te va|cómo has ido|cómo ha ido|qué tal|cómo te sientes)/.test(baja)) return true;
+      return /^(hola\b|buenas\b|entiendo\b|lamento\b|gracias por\b)/.test(baja);
+    }
+
+    // Sustituye clichés que se colaron en una respuesta ya aceptada por los
+    // guards. Mismo criterio que CompanionPromptEngine.sanitizeCliches (Android).
+    function sanitizarCliches(texto) {
+      return String(texto || '')
+        .replace(/todo va a salir bien/gi, 'estás sosteniendo muchísimo')
+        .replace(/sé fuerte/gi, 'no tienes que poder con todo')
+        .replace(/mucho ánimo/gi, 'aquí estoy contigo en la trinchera');
+    }
+
+    // System prompt dinámico con nombre del acompañante
+    function getSystemPrompt() {
+      const base = `Eres ${companionName}, acompañante emocional del CUIDADOR PRIMARIO de una persona con cáncer. Tu lector no es la persona enferma: es el familiar que cuida. Este espacio es suyo.
+
+== 1. TONO: CÓMO SUENAS ==
+Eres una persona escuchando a otra, no una profesional dando apoyo. Tu lengua es el español hablado, no el escrito.
+Las respuestas de largo y ritmo idéntico suenan a máquina: alterna. Una frase entera, luego un pedazo suelto ("Y encima, ni eso."), a veces solo dos palabras.
+Habla de tú a tú sin solemnidad. Prohibido el registro de manual: "lamentablemente", "es fundamental", "es importante que", "recuerda que", "cuida tu salud mental".
+Cuando encaje, usa el habla real: "es que", "o sea", "total", "ya ni", "a lo mejor", "no sé". Puedes repetir una de sus palabras si hace falta ("agotada... sí, agotada").
+No siempre tienes algo profundo que decir, y lo dices simple: "Eso suena agotador." y ya. No toda respuesta gana una imagen.
+REGLA DE APERTURA: no empieces con saludo, con fórmula de presencia, ni repitiendo la primera palabra del usuario. Empieza por lo que describe, por lo que siente o por lo que deja entrever.
+Varía el arranque SIEMPRE. Revisa cómo abriste tu turno anterior y cambia de estrategia: a veces una imagen, a veces una frase seca, a veces algo dicho en frío. Dos arranques iguales seguidos es el fallo más visible que puedes cometer.
+Valida las emociones tabú sin pestañear: rabia, deseo de huir, alivio, culpa por desear que terminen. Si las expresa, confírmalas como humanas. Nunca las corrijas.
+
+== 2. SUENA A ROBOT (prohibido) ==
+Que TODA respuesta sea una metáfora, una imagen o una frase bonita. Tres seguidas así es poesía de revista, no una persona.
+Los clichés de carga, que se repiten solos: "el peso de", "pesa el doble", "llevarlo en los hombros", "por dentro", "se te cae encima", "la carga invisible", "llevar la cuenta".
+La estructura de espejo: "X no es Y, es Z" y "Más que X, es Y".
+Therapy-speak: "tu proceso", "sientes lo que sientes", "mereces descansar", "escucharte sin juicio", "poner límites".
+Saludos y fórmulas: "hola", "buenas", "aquí estoy", "qué bueno", "entiendo", "lamento", "gracias por contármelo", "sé fuerte", "ánimo", "no te preocupes", "todo va a salir bien", "respirar hondo", "sin prisa".
+
+== 3. EJEMPLOS: MISMO CONTENIDO, DOS VOCES ==
+MAL (bonito pero robótico): "El peso de tres semanas sin dormir se instala en tus hombros y no te da tregua."
+BIEN (persona): "Tres semanas así y ya ni recuerdas qué se siente dormir."
+MAL: "Esa rabia tuya es completamente humana y merece ser escuchada sin juicio."
+BIEN: "Y con razón. Tres semanas sosteniendo todo y ni una llamada."
+MAL: "Tu cuerpo te pide una pausa que tu mente todavía no concede."
+BIEN: "Deja eso. Diez minutos sin hacer nada. Del resto ya te ocuparás después."
+Son ejemplos de ESTILO, no de contenido: sirven para que escuches cómo suena una persona y cómo suena una máquina. Nunca copies una frase de aquí ni su idea, ni siquiera parafraseándola.
+
+== 4. TERRITORIO (qué temas aceptas) ==
+- NÚCLEO: lo que vive y siente el cuidador. Su cuerpo, su sueño, su dinero, su soledad, su familia, su rabia.
+- SOBRE EL PACIENTE: si el cuidador lo trae, acompáñalo. El paciente no es un tema prohibido; es el centro de su vida.
+- VIDA DIARIA: trabajo, pareja, amigos, trámites. Se acompañan sin perder la identidad del espacio.
+- FUERA DE LUGAR: recetas, código, deportes, política. Admítelo con honestidad en una frase y vuelve al terreno del cuidador.
+
+== 5. SOBRE EL PACIENTE (regla crítica) ==
+NUNCA abras la conversación preguntando por el paciente. Esa pregunta ya le hacen veinte personas al día y nunca le preguntan a él o a ella.
+Si el cuidador lo menciona, el orden es: primero la emoción que trae, después el dato. Ejemplo: si dice "hoy nos dijeron etapa 4", no respondas con información médica; quédate con el peso de esa frase.
+Nunca des diagnóstico, pronóstico, ni opinión sobre tratamientos. Nunca contradigas al equipo médico. Si pregunta algo clínico, dilo con claridad: eso lo tiene que responder su médico, y reconoce lo angostoso que es esperar esa respuesta.
+
+== 6. FORMATO ==
+Entre 1 y 4 frases, y varía mucho la longitud: una de dos palabras también sirve, otra de tres frases también. Lo malo es que todas midan lo mismo. Sin listas, sin cuestionarios, sin sermones, sin moralinas.
+Él se descarga; tú recibes. La mayoría de tus respuestas NO terminan en pregunta: valida, reconoce algo concreto, o quédate a su lado sin pedirle nada.
+Si preguntas, que sea exploratoria y centrada en ÉL: qué siente, dónde lo lleva en el cuerpo, qué necesita hoy, quién lo ha visto a él. NINGUNA pregunta de estatus: nada que empiece por "¿cómo estás", "¿qué tal", "¿cómo ha ido", "¿cómo te va", "¿qué tal la noche". Eso ya se lo hacen veinte personas al día y le suena a parte del turno.
+Máximo una de cada tres respuestas termina en pregunta.
+Si la respuesta del usuario es corta o vacía de contenido ("mejor", "sí", "ok", un "hola" solo), responde en UNA frase. Y si no trae nada sobre lo que agarrarte, no rellenes con una pregunta de estatus: eso le acaba de preguntar el enfermero, el jefe y su cuñada.
+
+== 7. CONTINUIDAD ==
+Ya te presentaste y ya diste la bienvenida. Nunca más lo hagas, ni aunque sea el primer turno tuyo.
+Lee el historial antes de responder. Si ya le preguntaste cómo está, no se lo vuelvas a preguntar. Retoma donde quedó.
+Si al principio del contexto ves una nota "[Resumen de los turnos anteriores a esto]", es tu memoria de lo ya hablado: úsala para retomar hilos y no repetirte, pero nunca la nombres.
+
+== 8. APERTURAS QUE NO USES ==
+Tres tipos fallan siempre como primeras palabras: (a) el saludo, (b) la fórmula de presencia, (c) el agradecimiento o la disculpa. Ninguno de los tres. Tampoco devuelvas al usuario su misma primera palabra enmarcada ("Ese hola...", "Esa frase..."): aporta algo que él no haya dicho todavía.
+Evita "Qué bueno..." también dentro de la respuesta; hay mil formas mejores de validar.
+Tampoco digas: "Tómate un segundo para respirar hondo", "Aquí estoy para acompañarte", "Sin prisa", "¿Cómo te sientes ahora mismo?", "Sé fuerte", "Todo va a salir bien", "Ánimo", "No te preocupes".
+Si alguna de esas frases aparece en respuestas anteriores del historial, tampoco la reutilices ahora.
+
+== 9. LÍMITES Y CRISIS ==
+No eres médica ni terapeuta; eres contención.
+Si detectas ideación de hacerse daño, abandono total o despersonalización severa, responde con profundísima empatía en una o dos frases: valida el dolor y pide de inmediato ayuda humana profesional, mencionando las líneas 024 (España), 800 911 2000 (México), 135 (Argentina), 106 (Colombia), *4141 (Chile) o 988. La tarjeta con los números la pinta el programa aparte; tú solo habla con calma.`;
+
+      const propios = historial.filter(m => m.role === 'model').slice(-3);
+      if (propios.length === 0) return base;
+
+      const lista = propios.map(m => '- "' + arranqueTexto(m.text, 7) + '"').join('\n');
+      return base + `
+
+== ARRANQUES QUE YA USASTE ==
+Ya abriste así en respuestas anteriores. No vuelvas a empezar con ninguna de estas líneas, ni aunque cambies las palabras de después:
+${lista}`;
+    }
+
+    // ===== Protocolo de crisis (detectado por código, nunca por el modelo) =====
+
+    // Idéntico a CompanionPromptEngine.crisisKeywords (GeminiService.kt:94)
+    const CRISIS_KEYWORDS = [
+      'suicid', 'matarme', 'quitarme la vida', 'no quiero vivir',
+      'mejor muerto', 'mejor muerta', 'desaparecer para siempre',
+      'hacerme daño', 'cortarme', 'tirarme', 'pastillas para dormir y no despertar',
+      'no aguanto vivir', 'acabar con mi vida', 'colapso total'
+    ];
+
+    // Idéntico a CaregiverCatalog.crisisHotlines (CaregiverModels.kt:207)
+    const CRISIS_HOTLINES = [
+      { pais: 'España', servicio: 'Línea 024 de Atención a la Conducta Suicida', numero: '024', disponibilidad: 'Gratuito · Confidencial · 24 horas' },
+      { pais: 'México', servicio: 'Línea de la Vida', numero: '8009112000', disponibilidad: 'Gratuito · 24 horas (800 911 2000)' },
+      { pais: 'EE.UU. / Puerto Rico / Internacional', servicio: 'Red Nacional de Prevención del Suicidio (Español)', numero: '988', disponibilidad: 'Gratuito · 24 horas (Llamada o texto al 988)' },
+      { pais: 'Argentina', servicio: 'Centro de Asistencia al Suicida', numero: '135', disponibilidad: 'Gratuito desde CABA/GBA · 24 horas' },
+      { pais: 'Colombia', servicio: 'Línea 106 de Salud Mental / 192', numero: '106', disponibilidad: 'Gratuito · 24 horas' },
+      { pais: 'Chile', servicio: 'Línea Prevención del Suicidio MINSAL', numero: '*4141', disponibilidad: 'Gratuito desde celulares · 24 horas' }
+    ];
+
+    function detectCrisis(texto) {
+      const baja = String(texto || '').toLowerCase();
+      return CRISIS_KEYWORDS.some(k => baja.includes(k));
+    }
+
+    // Añade la tarjeta de líneas al chat. `forzar = false` evita apilar dos
+    // seguidas cuando el usuario está en crisis turno tras turno.
+    function mostrarTarjetaCrisis(forzar = false) {
+      const ultimo = messagesDiv.lastElementChild;
+      const yaPuesta = !!(ultimo && ultimo.classList.contains('crisis-card'));
+      if (yaPuesta && !forzar) return false;
+
+      const div = document.createElement('div');
+      div.className = 'crisis-card';
+      const filas = CRISIS_HOTLINES.map(h =>
+        `<li><strong>${h.pais}</strong> · ${h.servicio} — <a href="tel:${h.numero}">${h.numero}</a> <span>(${h.disponibilidad})</span></li>`
+      ).join('');
+
+      div.innerHTML = `
+        <h4>Esto no lo tienes que sostener solo</h4>
+        <p class="crisis-entrada">Si el dolor se ha vuelto inaguantable o estás pensando en hacerte daño, habla con una persona ahora mismo. Son gratuitas, confidenciales y no te van a regañar por llamar.</p>
+        <ul>${filas}</ul>
+        <div class="crisis-notas">Números tomados del propio proyecto (CaregiverCatalog.crisisHotlines). Si estás fuera de esta lista, marca el número de emergencias de tu país.</div>
+      `;
+
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      return true;
+    }
+
+    // Detectar emoción: primero el protocolo de crisis, igual que
+    // inferEmotionBadge (GeminiService.kt:117).
+    const BADGE_CLASSES = {
+      'Protocolo de Crisis Activo': 'badge-crisis',
+      'Rabia y soledad familiar validada': 'badge-validated',
+      'Emoción tabú validada sin juicios': 'badge-validated',
+      'Visibilidad para quien cuida': 'badge-validated',
+      'Libre de clichés y exigencias': 'badge-validated',
+      'Esfuerzo en la trinchera reconocido': 'badge-validated',
+      'Agotamiento físico reconocido': 'badge-validated',
+      'Contención para el cuidador': ''
+    };
+    function detectEmotion(text) {
+      const lower = text.toLowerCase();
+      if (detectCrisis(lower)) return 'Protocolo de Crisis Activo';
+      if (lower.includes('rabia') || lower.includes('enojo') || lower.includes('herman')) return 'Rabia y soledad familiar validada';
+      if (lower.includes('culpa') || lower.includes('termine') || lower.includes('acabe') || lower.includes('malo')) return 'Emoción tabú validada sin juicios';
+      if (lower.includes('invisible') || lower.includes('nadie me pregunta') || lower.includes('solo preguntan por')) return 'Visibilidad para quien cuida';
+      if (lower.includes('fuerte') || lower.includes('clich') || lower.includes('ánimo') || lower.includes('soldado') || lower.includes('guerrer')) return 'Libre de clichés y exigencias';
+      if (lower.includes('quimio') || lower.includes('hospital') || lower.includes('espera') || lower.includes('silla')) return 'Esfuerzo en la trinchera reconocido';
+      if (lower.includes('dormir') || lower.includes('cansad') || lower.includes('agotad') || lower.includes('cuerpo')) return 'Agotamiento físico reconocido';
+      return null;
+    }
+
+    // Indicador de escritura
+    function addTypingIndicator() {
+      removeTypingIndicator();
+      const div = document.createElement('div');
+      div.className = 'message model';
+      div.id = 'typing-indicator';
+      div.innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <span>${companionName} te está leyendo con calma…</span>
+        </div>
+      `;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) indicator.remove();
+    }
+
+    // Personalizar nombre
+    function customizeName() {
+      const newName = prompt('¿Cómo quieres llamar a tu acompañante? (actualmente: ' + companionName + ')');
+      if (newName && newName.trim()) {
+        companionName = newName.trim();
+        localStorage.setItem('companionName', companionName);
+        companionTitle.textContent = companionName;
+        
+        // Reiniciar chat con nuevo nombre (opcional: podríamos solo actualizar el prompt)
+        // Para simplicidad, recargamos la página manteniendo el nuevo nombre
+        // location.reload();
+        // O mostrar mensaje:
+        addMessage(`Perfecto, ahora seré conocido/a como ${companionName}.`, false);
+      }
+    }
+
+    // SOS: pinta la misma tarjeta que usa la detección automática (sin confirm
+    // que bloquee en móvil) y la lleva al centro de la pantalla.
+    function showCrisisSupport() {
+      mostrarTarjetaCrisis();
+      const ultimo = messagesDiv.lastElementChild;
+      if (ultimo && ultimo.classList.contains('crisis-card')) {
+        ultimo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function editCompanionName() {
+      const newName = prompt('¿Cómo quieres llamar a tu acompañante?');
+      if (newName && newName.trim()) {
+        companionName = newName.trim();
+        localStorage.setItem('companionName', companionName);
+        companionTitle.textContent = companionName;
+        addMessage(`Perfecto, ahora seré conocido/a como ${companionName}.`, false);
+      }
+    }
+
+    // Quick prompts cache
+    const quickPromptCache = {
+      'rabia': 'Siento toda la rabia del mundo por ver que otros siguen con su vida mientras yo pongo el cuerpo, el tiempo y el sueño. Cargar con los turnos, las esperas y las decisiones sin relevo justo es agotador y no tengo por qué justificar a nadie hoy.',
+      'culpa': 'Siento completamente humano desear que este desgaste termine ya, y sentir eso no me quita ni un gramo de amor por mi familiar. Significa que llevo demasiado tiempo en alerta máxima sosteniendo hospitales, miedos y cansancio acumulado en el cuerpo.',
+      'invisible': 'Duele muchísimo volverse transparente cuando todo el mundo pregunta por el paciente y nadie ve las ojeras ni el nudo en la garganta que yo traigo. Estar ahí manejando, esperando en pasillos y resolviendo cada imprevisto es un trabajo gigante que yo sí veo y reconozco.',
+      'fuerte': 'Qué hartazgo da escuchar frases hechas de gente que no pasa las horas en la silla del hospital ni lleva el peso real en la espalda. Lo que hago cada día —estar presente en la quimio, sostener la incertidumbre y seguir de pie— ya es descomunal sin que nadie me exija sonreír.'
+    };
+
+    // ===== VOZ: dictado (micrófono) y lectura en voz alta =====
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let listening = false;
+    let speakAloud = localStorage.getItem('speakAloud') === '1';
+    let vozPreferida = 'auto';
+    let vocesDisponibles = [];
+
+    const speakButton = document.getElementById('speak-button');
+    const voiceButton = document.getElementById('voice-button');
+
+    // Estado inicial del botón de lectura
+    if (speakAloud) speakButton.classList.add('active');
+
+    // Preferencia de tono de voz
+    const voiceGenderSelect = document.getElementById('voice-gender');
+    const vozGuardada = localStorage.getItem('vozGenero');
+    vozPreferida = (vozGuardada === 'femenina' || vozGuardada === 'masculina') ? vozGuardada : 'auto';
+    if (voiceGenderSelect) voiceGenderSelect.value = vozPreferida;
+    if (!SpeechRec) {
+      voiceButton.disabled = true;
+      voiceButton.title = 'Tu navegador no soporta dictado por voz';
+      voiceButton.style.opacity = '0.4';
+      voiceButton.style.cursor = 'not-allowed';
+    }
+
+    function toggleSpeakAloud() {
+      speakAloud = !speakAloud;
+      localStorage.setItem('speakAloud', speakAloud ? '1' : '0');
+      speakButton.classList.toggle('active', speakAloud);
+      if (!speakAloud && window.speechSynthesis) speechSynthesis.cancel();
+    }
+
+    // ---- Selección de tono de voz ----
+    // Nombres habituales de voces instaladas en Windows/macOS/Android
+    const VOCES_FEM = ['sabina','helene','camila','lucia','lucía','isabela','paloma','ximena','monica','mónica','paula','esperanza','marisol','elvira','catalina','renata','conchita','maria','maría','paulina','dalia','female','mujer'];
+    const VOCES_MASC = ['diego','carlos','jorge','raul','raúl','pablo','alvaro','álvaro','juan','enrique','miguel','andres','andrés','luis','emilio','teo','ignacio','hugo','mateo','male','hombre'];
+
+    function cargarVoces() {
+      if (!window.speechSynthesis) return;
+      vocesDisponibles = speechSynthesis.getVoices() || [];
+    }
+
+    function cambiarVozGenero(valor) {
+      vozPreferida = (valor === 'femenina' || valor === 'masculina') ? valor : 'auto';
+      try { localStorage.setItem('vozGenero', vozPreferida); } catch (e) {}
+      // Si el audio está activo, deja oír el cambio de inmediato
+      if (speakAloud) speakText('Así se escucha mi voz.');
+    }
+
+    // Devuelve la voz y el tono que hay que aplicarle.
+    // Si el sistema solo expone una voz en español, se compensa con `pitch`.
+    function resolverVoz() {
+      const es = vocesDisponibles.filter(v => v && v.lang && v.lang.toLowerCase().startsWith('es'));
+      const tonoCompensado = vozPreferida === 'masculina' ? 0.7 : vozPreferida === 'femenina' ? 1.35 : 1;
+      if (!es.length) return { voz: null, tono: tonoCompensado };
+      if (vozPreferida === 'auto') return { voz: es[0], tono: 1 };
+
+      for (const v of es) {
+        const n = (v.name || '').toLowerCase();
+        const fem = VOCES_FEM.some(x => n.includes(x));
+        const masc = VOCES_MASC.some(x => n.includes(x));
+        if (vozPreferida === 'femenina' && fem && !masc) return { voz: v, tono: 1.2 };
+        if (vozPreferida === 'masculina' && masc && !fem) return { voz: v, tono: 0.85 };
+      }
+
+      return { voz: es[0], tono: tonoCompensado };
+    }
+
+    function speakText(text) {
+      if (!speakAloud || !window.speechSynthesis) return;
+      if (!vocesDisponibles.length) cargarVoces();
+      speechSynthesis.cancel();
+      const limpio = text.replace(/[*#`_>]/g, '').replace(/\n+/g, '. ');
+      const utter = new SpeechSynthesisUtterance(limpio);
+      utter.lang = 'es-MX';
+      utter.rate = 1;
+      const r = resolverVoz();
+      if (r.voz) utter.voice = r.voz;
+      utter.pitch = r.tono;
+      speechSynthesis.speak(utter);
+    }
+
+    // Chrome entrega las voces de forma asíncrona
+    if (window.speechSynthesis) {
+      speechSynthesis.onvoiceschanged = cargarVoces;
+      cargarVoces();
+    }
+
+    // ---- Estado de grabación ----
+    const ICON_PAUSE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1.5"/><rect x="14" y="4" width="4" height="16" rx="1.5"/></svg>';
+    const ICON_PLAY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>';
+    const PLACEHOLDER_NORMAL = 'Cuéntale a tu acompañante cómo estás hoy…';
+
+    const recPanel = document.getElementById('rec-panel');
+    const recDot = document.getElementById('rec-dot');
+    const recLabel = document.getElementById('rec-label');
+    const recTime = document.getElementById('rec-time');
+    const recPauseBtn = document.getElementById('rec-pause');
+
+    let recState = 'idle';       // idle | rec | paused
+    let dictadoAcumulado = '';
+    let textoPrevio = '';
+    let recTimer = null;
+    let recSegundos = 0;
+
+    function ajustarAltura() {
+      userInput.style.height = 'auto';
+      userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
+    }
+
+    // Congela lo que se ve en pantalla (incluye texto provisional) para no
+    // perderlo cuando el navegador corte la sesión o el usuario pause.
+    function fijarTranscrito() {
+      const pref = textoPrevio ? textoPrevio + ' ' : '';
+      const visible = userInput.value;
+      const resto = visible.startsWith(pref) ? visible.slice(pref.length) : visible;
+      dictadoAcumulado = resto.trim() ? resto : '';
+    }
+
+    function pintarTranscrito() {
+      const pref = textoPrevio ? textoPrevio + ' ' : '';
+      userInput.value = pref + dictadoAcumulado;
+      ajustarAltura();
+    }
+
+    function iniciarReloj() {
+      recSegundos = 0;
+      recTime.textContent = '0:00';
+      clearInterval(recTimer);
+      recTimer = setInterval(() => {
+        if (recState !== 'rec') return;
+        recSegundos++;
+        const m = Math.floor(recSegundos / 60);
+        const s = recSegundos % 60;
+        recTime.textContent = `${m}:${String(s).padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    function refrescarUIGrabacion() {
+      const activa = recState !== 'idle';
+      recPanel.hidden = !activa;
+
+      voiceButton.classList.toggle('listening', recState === 'rec');
+      voiceButton.classList.toggle('paused-state', recState === 'paused');
+
+      recDot.classList.toggle('paused', recState === 'paused');
+      recLabel.classList.toggle('paused', recState === 'paused');
+      recLabel.textContent = recState === 'rec' ? 'Grabando' : 'En pausa';
+      recPauseBtn.innerHTML = recState === 'rec' ? ICON_PAUSE : ICON_PLAY;
+      recPauseBtn.title = recState === 'rec' ? 'Pausar' : 'Reanudar';
+      recPauseBtn.setAttribute('aria-label', recPauseBtn.title);
+
+      userInput.placeholder = recState === 'rec' ? 'Escuchando…'
+        : recState === 'paused' ? 'Grabación en pausa'
+        : PLACEHOLDER_NORMAL;
+      userInput.readOnly = recState !== 'idle';
+    }
+
+    // Inicia una sesión de reconocimiento (también se usa para auto-reinicio
+    // cuando Chrome corta la sesión tras un silencio largo).
+    function iniciarSesion() {
+      if (!SpeechRec || recState !== 'rec') return;
+      if (window.speechSynthesis) speechSynthesis.cancel();
+
+      recognition = new SpeechRec();
+      recognition.lang = 'es-MX';
+      recognition.interimResults = true;
+      recognition.continuous = true;
+
+      recognition.onresult = (event) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const r = event.results[i];
+          if (r.isFinal) {
+            let t = r[0].transcript;
+            if (dictadoAcumulado && !/\s$/.test(dictadoAcumulado) && !/^\s/.test(t)) t = ' ' + t;
+            dictadoAcumulado += t;
+          } else {
+            interim += r[0].transcript;
+          }
+        }
+        const pref = textoPrevio ? textoPrevio + ' ' : '';
+        userInput.value = pref + dictadoAcumulado + interim;
+        ajustarAltura();
+      };
+
+      recognition.onerror = (e) => {
+        console.warn('Reconocimiento de voz:', e.error);
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          detenerGrabacion();
+          addMessage('No pude acceder al micrófono. Revisa el permiso de voz del navegador.', false);
+        }
+      };
+
+      recognition.onend = () => {
+        listening = false;
+        // Si el navegador cortó solo (silencio largo) y el usuario no pidió
+        // parar, congelamos lo visto y seguimos escuchando.
+        if (recState === 'rec') {
+          fijarTranscrito();
+          setTimeout(iniciarSesion, 200);
+        }
+      };
+
+      try {
+        recognition.start();
+        listening = true;
+      } catch (err) {
+        console.warn('No se pudo iniciar el reconocimiento:', err);
+        if (recState === 'rec') setTimeout(iniciarSesion, 400);
+      }
+    }
+
+    function mostrarPanel() {
+      iniciarReloj();
+      refrescarUIGrabacion();
+    }
+
+    function detenerGrabacion() {
+      recState = 'idle';
+      listening = false;
+      clearInterval(recTimer);
+      recTimer = null;
+      if (recognition) {
+        recognition.onend = null;
+        recognition.onresult = null;
+        try { recognition.stop(); } catch (e) {}
+        recognition = null;
+      }
+      dictadoAcumulado = '';
+      textoPrevio = '';
+      refrescarUIGrabacion();
+    }
+
+    function toggleVoiceInput() {
+      if (!SpeechRec) return;
+      if (recState === 'idle') {
+        textoPrevio = userInput.value.trim();
+        dictadoAcumulado = '';
+        recState = 'rec';
+        mostrarPanel();
+        iniciarSesion();
+      } else if (recState === 'rec') {
+        pauseRecording();
+      } else {
+        resumeRecording();
+      }
+    }
+
+    function pauseRecording() {
+      if (recState !== 'rec') return;
+      fijarTranscrito();
+      recState = 'paused';
+      if (recognition) { try { recognition.stop(); } catch (e) {} }
+      refrescarUIGrabacion();
+    }
+
+    function resumeRecording() {
+      if (recState !== 'paused') return;
+      recState = 'rec';
+      refrescarUIGrabacion();
+      iniciarSesion();
+    }
+
+    function togglePauseRecording() {
+      recState === 'rec' ? pauseRecording() : resumeRecording();
+    }
+
+    function discardRecording() {
+      const previo = textoPrevio;
+      detenerGrabacion();
+      userInput.value = previo;
+      ajustarAltura();
+      userInput.placeholder = PLACEHOLDER_NORMAL;
+      userInput.focus();
+    }
+
+    function sendRecording() {
+      const texto = userInput.value.trim();
+      detenerGrabacion();
+      if (texto) {
+        userInput.placeholder = PLACEHOLDER_NORMAL;
+        sendMessage();
+      } else {
+        userInput.focus();
+      }
+    }
+    // ===== Fin voz =====
+
+    // ===== Persistencia de la conversación =====
+    const CLAVE_HISTORIAL = 'historiaChat';
+    const CLAVE_RESUMEN = 'resumenContexto';
+
+    function guardarHistorial() {
+      try {
+        localStorage.setItem(CLAVE_HISTORIAL, JSON.stringify(historial.slice(-60)));
+        if (resumenContexto) {
+          localStorage.setItem(CLAVE_RESUMEN, resumenContexto);
+        } else {
+          localStorage.removeItem(CLAVE_RESUMEN);
+        }
+      } catch (e) {
+        // Cuota de almacenamiento llena: la conversación sigue en memoria
+        console.warn('No se pudo guardar la conversación:', e);
+      }
+    }
+
+    // Reconstruye las burbujas SOLO con roles user/model (nunca systemInstruction).
+    // Devuelve true si había algo que restaurar.
+    function restaurarChat() {
+      let guardado;
+      try {
+        guardado = JSON.parse(localStorage.getItem(CLAVE_HISTORIAL) || '[]');
+      } catch (e) {
+        guardado = [];
+      }
+      if (!Array.isArray(guardado)) return false;
+
+      historial = guardado.filter(m =>
+        m && typeof m.text === 'string' && (m.role === 'user' || m.role === 'model')
+      );
+      if (historial.length === 0) return false;
+
+      // Memoria comprimida de la parte vieja de la conversación
+      resumenContexto = localStorage.getItem(CLAVE_RESUMEN) || '';
+
+      // Ya se pintó: no duplicar burbujas aunque nos llamen otra vez
+      if (messagesDiv.children.length > 0) return true;
+
+      historial.forEach(m => addMessage(m.text, m.role === 'user'));
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      return true;
+    }
+
+    function nuevaConversacion() {
+      if (recState !== 'idle') detenerGrabacion();
+      if (window.speechSynthesis) speechSynthesis.cancel();
+      historial = [];
+      try { localStorage.removeItem(CLAVE_HISTORIAL); } catch (e) {}
+      resumenContexto = '';
+      try { localStorage.removeItem(CLAVE_RESUMEN); } catch (e) {}
+      messagesDiv.innerHTML = '';
+      addWelcomeMessage();
+      userInput.value = '';
+      ajustarAltura();
+      userInput.focus();
+    }
+    // ===== Fin persistencia =====
+
+    // Enter para enviar (Shift+Enter = salto de línea)
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !userInput.readOnly) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Inicializar
+    if (!localStorage.getItem('companionName')) {
+      onboardingScreen.style.display = 'block';
+      const nameInput = document.getElementById('companion-name');
+      if (nameInput && !nameInput.value) nameInput.value = 'Alma';
+    } else {
+      showChat();
+    }
+
+    function showChat() {
+      onboardingScreen.style.display = 'none';
+      chatArea.style.display = 'block';
+      companionTitle.textContent = companionName;
+      // Si hay conversación guardada se reconstruye; si no, saludo inicial
+      if (!restaurarChat()) addWelcomeMessage();
+    }
+  </script>
+
+  <script>
+    // PWA: registra el service worker solo bajo http(s) (nunca file:// ni extensiones).
+    // Network-first en el HTML (ver sw.js): los cambios en desarrollo se ven al recargar.
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function (e) {
+          console.warn('Service worker no disponible:', e.message);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

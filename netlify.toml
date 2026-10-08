@@ -1,0 +1,9 @@
+# Despliegue del prototipo web de Alma en Netlify.
+# La clave se inyecta en el build desde la variable de entorno GEMINI_API_KEY
+# (Site settings -> Environment variables). config.js está en .gitignore, por
+# eso se genera aquí y nunca se versiona.
+[build]
+  command = "node netlify-create-config.js"
+  publish = "."
+
+# Sirve el HTML con gzip/brotli por defecto; nada más que configurar.
