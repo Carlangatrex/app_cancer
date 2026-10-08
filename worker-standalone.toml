@@ -1,0 +1,3 @@
+name = "alma-gemini-proxy-standalone"
+main = "worker-standalone.js"
+compatibility_date = "2025-10-08"
