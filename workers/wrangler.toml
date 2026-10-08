@@ -4,3 +4,5 @@ compatibility_date = "2025-10-08"
 
 [assets]
 directory = "../web-netlify"
+binding = "ASSETS"
+
