@@ -12,8 +12,8 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.POST
-import retrofit2.http.Query
 import java.util.concurrent.TimeUnit
 
 @Serializable
@@ -56,7 +56,9 @@ interface GeminiApiService {
     // plataformas se comporten igual.
     @POST("v1beta/models/gemini-flash-lite-latest:generateContent")
     suspend fun generateContent(
-        @Query("key") apiKey: String,
+        // Las claves nuevas de AI Studio (prefijo AQ.) solo se aceptan por header,
+        // no como parámetro ?key= de la URL.
+        @Header("x-goog-api-key") apiKey: String,
         @Body request: GenerateContentRequest
     ): GenerateContentResponse
 }

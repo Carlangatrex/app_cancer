@@ -41,12 +41,12 @@ export default {
     const body = await request.text();
     const isStream = url.pathname.includes('stream');
     const model = url.searchParams.get('model') || 'gemini-flash-lite-latest';
-    const endpoint = isStream
-      ? `${TARGET_BASE}${model}:streamGenerateContent?alt=sse&key=${env.GEMINI_API_KEY}`
-      : `${TARGET_BASE}${model}:generateContent?key=${env.GEMINI_API_KEY}`;
-    const resp = await fetch(endpoint, {
+    // Las claves de AI Studio (incluidas las nuevas con prefijo AQ.) van por
+    // header, nunca en la URL: evita que la clave quede en logs o referers.
+    const action = isStream ? 'streamGenerateContent?alt=sse' : 'generateContent';
+    const resp = await fetch(`${TARGET_BASE}${model}:${action}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
       body,
     });
     const respHeaders = new Headers(resp.headers);
