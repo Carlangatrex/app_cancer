@@ -359,7 +359,9 @@
       .avatar-display { width: 44px; height: 44px; }
       .avatar-info h2 { font-size: 15px; }
       .avatar-info p { font-size: 10px; }
-      .sos-button { padding: 5px 9px; font-size: 11px; }
+      /* Sin min-width fijo: en pantallas angostas el SOS se comia el espacio
+         del nombre y la info colapsaba a cero. */
+      .sos-button { min-width: 0; padding: 6px 11px; font-size: 11px; }
     }
     /* --- Modales (check-in, micro-regulación, crisis) --- */
     .modal-overlay {

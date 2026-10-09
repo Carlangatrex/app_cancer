@@ -4,7 +4,7 @@
 // - Todo lo demás (reportes de test, peticiones a la API de Gemini): pasa a red, sin cachear.
 // Así, en desarrollo siempre se ve el HTML recién editado, y la API nunca se cachea.
 
-const CACHE = 'alma-v3';
+const CACHE = 'alma-v4';
 const PRECACHE = [
   './index.html',
   './icon-192.png',
