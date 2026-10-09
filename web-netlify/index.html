@@ -161,7 +161,16 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       max-width: 100%;
     }
-    .edit-icon { font-size: 13px; cursor: pointer; opacity: 0.7; }
+    /* Fila del nombre + lapiz: el lapiz es un boton con area tactil real
+       (el viejo span de 13px era intocable en el celular). */
+    .nombre-fila { display: flex; align-items: center; gap: 2px; width: 100%; min-width: 0; }
+    .nombre-fila h2 { flex: 1 1 auto; min-width: 0; }
+    .edit-btn {
+      border: none; background: transparent; color: var(--on-surface-variant);
+      font-size: 15px; cursor: pointer; padding: 8px; line-height: 1; flex: none;
+      touch-action: manipulation;
+    }
+    .edit-btn:hover { color: var(--on-surface); }
     .avatar-info h2 { margin: 0; font-size: 17px; font-weight: 500; color: var(--on-surface); }
     .avatar-info p { margin: 2px 0 0; font-size: 11px; color: var(--on-surface-variant); }
 
@@ -461,8 +470,10 @@
           <img src="gemini-svg.svg" alt="Avatar del acompañante" class="avatar-icon" />
         </div>
         <div class="avatar-info">
-          <h2 id="companion-title" class="editable-name" onclick="editCompanionName()" tabindex="0" role="button" title="Clic para cambiar el nombre">Alma</h2>
-          <span class="edit-icon" onclick="event.stopPropagation(); editCompanionName()">✎</span>
+          <div class="nombre-fila">
+            <h2 id="companion-title" class="editable-name" onclick="editCompanionName()" tabindex="0" role="button" title="Toca para cambiar el nombre">Alma</h2>
+            <button class="edit-btn" onclick="editCompanionName()" title="Cambiar el nombre" aria-label="Cambiar el nombre de tu acompañante">✎</button>
+          </div>
           <p>Acompañante virtual</p>
         </div>
         <div class="header-actions">
@@ -555,6 +566,17 @@
       <h3>Mi semana</h3>
       <p class="modal-sub">Un registro de a cuánto va tu cuerpo y tu ánimo. Se queda solo en este navegador.</p>
       <div id="checkin-body"></div>
+    </div>
+  </div>
+
+  <!-- Modal: cambiar el nombre del acompanante -->
+  <div class="modal-overlay" id="modal-nombre" onclick="if (event.target === this) cerrarModales()">
+    <div class="modal">
+      <button class="modal-close" onclick="cerrarModales()" aria-label="Cerrar">×</button>
+      <h3>Nombre de tu acompañante</h3>
+      <p class="modal-sub">Así te hablará en cada respuesta.</p>
+      <input type="text" class="companion-name-input" id="nuevo-nombre" maxlength="30" aria-label="Nuevo nombre">
+      <button class="btn-principal" onclick="guardarNombre()">Guardar</button>
     </div>
   </div>
 
@@ -1442,14 +1464,25 @@ ${lista}`;
       }
     }
 
+    // Cambiar el nombre: modal propio en vez de window.prompt(), que varios
+    // navegadores embebidos (WhatsApp, etc.) bloquean y el lapiz viejo era
+    // intocable en el celular.
     function editCompanionName() {
-      const newName = prompt('¿Cómo quieres llamar a tu acompañante?');
-      if (newName && newName.trim()) {
-        companionName = newName.trim();
-        localStorage.setItem('companionName', companionName);
-        companionTitle.textContent = companionName;
-        addMessage(`Perfecto, ahora seré conocido/a como ${companionName}.`, false);
-      }
+      const campo = document.getElementById('nuevo-nombre');
+      if (!campo) return;
+      campo.value = companionName;
+      abrirModal('modal-nombre');
+      setTimeout(function () { campo.focus(); campo.select(); }, 50);
+    }
+
+    function guardarNombre() {
+      const campo = document.getElementById('nuevo-nombre');
+      const nuevo = (campo.value || '').trim();
+      if (!nuevo) return;
+      companionName = nuevo;
+      localStorage.setItem('companionName', companionName);
+      companionTitle.textContent = companionName;
+      cerrarModales();
     }
 
     // Quick prompts cache
@@ -2172,6 +2205,11 @@ ${lista}`;
       const sel = document.getElementById('voice-gender');
       if (sel) sel.value = vozPreferida;
     }
+
+    // Enter en el campo de nombre guarda
+    document.getElementById('nuevo-nombre').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); guardarNombre(); }
+    });
 
     // Inicializar
     if (!localStorage.getItem('companionName')) {
