@@ -4,9 +4,9 @@
 // - Todo lo demás (reportes de test, peticiones a la API de Gemini): pasa a red, sin cachear.
 // Así, en desarrollo siempre se ve el HTML recién editado, y la API nunca se cachea.
 
-const CACHE = 'alma-v4';
+const CACHE = 'alma-v5';
 const PRECACHE = [
-  './index.html',
+  './app.html',
   './politica-de-privacidad.html',
   './icon-192.png',
   './icon-512.png',
@@ -42,10 +42,10 @@ self.addEventListener('fetch', (event) => {
       fetch(req)
         .then((res) => {
           const copia = res.clone();
-          caches.open(CACHE).then((cache) => cache.put('./index.html', copia)).catch(() => {});
+          caches.open(CACHE).then((cache) => cache.put('./app.html', copia)).catch(() => {});
           return res;
         })
-        .catch(() => caches.match('./index.html'))
+        .catch(() => caches.match('./app.html'))
     );
     return;
   }

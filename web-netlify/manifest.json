@@ -3,7 +3,7 @@
   "short_name": "Respiro",
   "description": "Acompañante emocional especializado en cuidadores de personas con cáncer. Un espacio seguro para descargar el peso, la rabia y el cansancio del que cuida.",
   "lang": "es",
-  "start_url": "./index.html",
+  "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
