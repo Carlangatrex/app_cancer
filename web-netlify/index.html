@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Alma - Acompañante Emocional</title>
   <meta name="description" content="Acompañante emocional para cuidadores de personas con cáncer. Un espacio seguro para descargar el peso, la rabia y el cansancio del que cuida.">
   <meta name="theme-color" content="#6750a4">
@@ -39,9 +39,18 @@
       color: var(--on-surface);
       margin: 0;
       padding: 20px;
-      min-height: 100vh;
+      /* Espacio para la barra del iPhone (notch/home indicator). */
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+      padding-left: calc(20px + env(safe-area-inset-left));
+      padding-right: calc(20px + env(safe-area-inset-right));
+      min-height: 100vh; /* fallback */
+      min-height: 100dvh;
       overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
     }
+
+    /* En táctil, sin retardo de 300ms ni zoom por doble toque en los controles. */
+    button, select, .quick-prompt, .exercise-item { touch-action: manipulation; }
 
     .container { max-width: 800px; margin: 0 auto; }
 
@@ -66,7 +75,8 @@
       border: 1px solid var(--outline);
       border-radius: 12px;
       font-family: 'Inter', sans-serif;
-      font-size: 15px;
+      /* 16px: evita el zoom automático de iOS al enfocar. */
+      font-size: 16px;
       color: var(--on-surface);
       background: var(--bg);
       margin-bottom: 12px;
@@ -144,7 +154,11 @@
 
     .header-actions {
       margin-left: auto;
-      display: flex; align-items: center; gap: 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .header-divider {
+      width: 1px; height: 22px; background: var(--surface-variant);
+      margin: 0 2px; flex: none;
     }
 
     .sos-button {
@@ -178,8 +192,10 @@
     }
 
     .messages {
-      height: 500px; overflow-y: auto; background: var(--surface);
-      border-radius: 16px; padding: 20px; margin-bottom: 20px; min-height: 400px;
+      height: 500px; /* fallback para navegadores sin dvh */
+      /* En móvil la altura sigue al viewport real (dvh), no a un píxel fijo. */
+      height: clamp(340px, 58dvh, 560px); overflow-y: auto; background: var(--surface);
+      border-radius: 16px; padding: 20px; margin-bottom: 20px;
     }
 
     .message {
@@ -213,9 +229,11 @@
       background: var(--surface); border-radius: 24px; padding: 12px 16px; display: flex; gap: 10px; align-items: center;
     }
     .text-field {
-      flex: 1; border: none; font-family: 'Inter', sans-serif; font-size: 15px; resize: none; min-height: 40px; color: var(--on-surface);
-      ::placeholder { color: var(--on-surface-variant); }
+      flex: 1; border: none; font-family: 'Inter', sans-serif;
+      /* 16px: iOS Safari hace zoom al enfocar inputs con fuente menor. */
+      font-size: 16px; resize: none; min-height: 40px; color: var(--on-surface);
     }
+    .text-field::placeholder { color: var(--on-surface-variant); }
     .text-field:focus { outline: none; }
     .send-button {
       width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: var(--on-primary); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;
@@ -308,16 +326,27 @@
     }
     .quick-prompt:hover { background: var(--outline); color: var(--on-surface); }
     .quick-prompt.active { background: var(--primary); color: var(--on-primary); }
+    .quick-hint { font-size: 11px; color: var(--on-surface-variant); margin: 6px 2px 0; line-height: 1.4; }
+    /* Los prompts rapidos son puerta de entrada: cuando la conversación ya fluye, se retiran. */
+    .quick-prompts.oculto, .quick-hint.oculto { display: none; }
 
     .status { padding: 12px 16px; background: var(--surface-variant); border-radius: 12px; margin-bottom: 16px; font-size: 13px; }
     .loading { display: flex; align-items: center; gap: 8px; }
 
     @media (max-width: 480px) {
       .container { margin: 10px; }
-      .messages { height: 400px; }
       .message { max-width: 90%; }
-      .input-bar { padding: 8px 12px; }
-      .text-field { font-size: 13px; }
+      .messages { padding: 14px; margin-bottom: 14px; }
+      .input-bar { padding: 8px 12px; margin-bottom: calc(8px + env(safe-area-inset-bottom)); }
+      /* Objetivos táctiles más cómodos con el pulgar. */
+      .quick-prompt { padding: 10px 12px; font-size: 13px; }
+      .checkin-btn { padding: 12px; font-size: 15px; }
+      /* La cabecera apreta: menos aire entre botones y el selector de voz
+         pasa a segundo plano (el tono de voz sigue configurado). */
+      .header-actions { gap: 5px; }
+      .header-divider { margin: 0 1px; height: 18px; }
+      .voice-gender { display: none; }
+      .sos-button { padding: 5px 9px; font-size: 11px; }
     }
     /* --- Modales (check-in, micro-regulación, crisis) --- */
     .modal-overlay {
@@ -394,12 +423,15 @@
           <p>Acompañante virtual</p>
         </div>
         <div class="header-actions">
+          <!-- Navegación -->
           <button class="header-icon-btn" id="home-button" onclick="volverInicio()" title="Volver al inicio (editar tus datos)" aria-label="Volver al inicio">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 10.5L12 3l9 7.5"></path>
               <path d="M5 9.5V21h14V9.5"></path>
             </svg>
           </button>
+          <span class="header-divider" aria-hidden="true"></span>
+          <!-- Herramientas de bienestar -->
           <button class="header-icon-btn" id="checkin-button" onclick="abrirCheckin()" title="Mi semana: chequeo emocional" aria-label="Mi semana">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12h4l3-8 4 16 3-8h4"></path>
@@ -411,12 +443,16 @@
               <path d="M12 7v5l3 3"></path>
             </svg>
           </button>
+          <span class="header-divider" aria-hidden="true"></span>
+          <!-- Conversación -->
           <button class="header-icon-btn" id="new-chat-button" onclick="nuevaConversacion()" title="Nueva conversación" aria-label="Nueva conversación">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 20h9"></path>
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
           </button>
+          <span class="header-divider" aria-hidden="true"></span>
+          <!-- Voz -->
           <select class="voice-gender" id="voice-gender" onchange="cambiarVozGenero(this.value)" aria-label="Tono de voz" title="Tono de la voz del acompañante">
             <option value="auto">Voz automática</option>
             <option value="femenina">Voz femenina</option>
@@ -429,6 +465,7 @@
               <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
             </svg>
           </button>
+          <!-- Crisis: siempre al final y aparte, es un botón distinto a todo lo demás -->
           <button class="sos-button" onclick="showCrisisSupport()">SOS</button>
         </div>
       </div>
@@ -478,11 +515,12 @@
 
       <!-- Prompts rápidos -->
       <div class="quick-prompts" id="quick-prompts">
-        <div class="quick-prompt" onclick="sendPrompt('rabia')">Rabia familiar</div>
-        <div class="quick-prompt" onclick="sendPrompt('culpa')">Culpa propia</div>
-        <div class="quick-prompt" onclick="sendPrompt('invisible')">Me siento invisible</div>
-        <div class="quick-prompt" onclick="sendPrompt('fuerte')">Frases hechas</div>
+        <div class="quick-prompt" onclick="sendPrompt('rabia')">Rabia con mi familia</div>
+        <div class="quick-prompt" onclick="sendPrompt('culpa')">Culpa por querer que esto termine</div>
+        <div class="quick-prompt" onclick="sendPrompt('invisible')">Nadie pregunta cómo estoy yo</div>
+        <div class="quick-prompt" onclick="sendPrompt('fuerte')">Hartazgo de «sé fuerte»</div>
       </div>
+      <p class="quick-hint">¿No es ninguna de estas? Escríbelo con tus palabras: aquí no hay lista cerrada de sentimientos.</p>
 
       <!-- Estado -->
       <div class="status" id="status"></div>
@@ -774,6 +812,8 @@
         addWelcomeMessage();
       }
 
+      actualizarPrompts();
+
       // Enfocar input
       userInput.focus();
     }
@@ -986,6 +1026,7 @@ No inventes datos, no des consejos ni diagnósticos, no menciones esta instrucci
 
       try {
         historial.push({ role: 'user', text: text });
+        actualizarPrompts();
 
         let respuesta = '';
         let ultimoError = null;
@@ -1715,10 +1756,21 @@ ${lista}`;
       return true;
     }
 
+    // Los prompts rapidos solo tienen sentido para abrir la conversacion;
+    // cuando ya fluye, estorban entre el chat y la barra de escritura.
+    function actualizarPrompts() {
+      const visible = historial.length === 0;
+      const qp = document.getElementById('quick-prompts');
+      const hint = document.querySelector('.quick-hint');
+      if (qp) qp.classList.toggle('oculto', !visible);
+      if (hint) hint.classList.toggle('oculto', !visible);
+    }
+
     function nuevaConversacion() {
       if (recState !== 'idle') detenerGrabacion();
       if (window.speechSynthesis) speechSynthesis.cancel();
       historial = [];
+      actualizarPrompts();
       try { localStorage.removeItem(CLAVE_HISTORIAL); } catch (e) {}
       resumenContexto = '';
       try { localStorage.removeItem(CLAVE_RESUMEN); } catch (e) {}
@@ -1947,6 +1999,7 @@ ${lista}`;
       companionTitle.textContent = companionName;
       // Si hay conversación guardada se reconstruye; si no, saludo inicial
       if (!restaurarChat()) addWelcomeMessage();
+      actualizarPrompts();
     }
   </script>
 
