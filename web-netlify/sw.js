@@ -1,4 +1,4 @@
-// Service Worker de Alma. Estrategias:
+// Service Worker de Respiro. Estrategias:
 // - Navegaciones (HTML): network-first, y si el servidor no responde, la versión en caché.
 // - Assets estáticos precacheados (icono, svg, manifest): cache-first.
 // - Todo lo demás (reportes de test, peticiones a la API de Gemini): pasa a red, sin cachear.
