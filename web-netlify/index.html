@@ -417,7 +417,7 @@
     // La API key vive en config.js (gitignored), nunca en este archivo.
     const API_KEY = (typeof window.GEMINI_API_KEY === 'string' ? window.GEMINI_API_KEY : '').trim();
     if (!API_KEY) console.warn('API key no configurada: crea config.js con GEMINI_API_KEY.');
-    const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
+    const API_BASE = "/api/gemini?model=";
 
     // Rotación de modelos. Se quita cualquiera que devuelva 404 para esta clave.
     let modelosDisponibles = [
@@ -439,9 +439,7 @@
         const ctrl = new AbortController();
         const reloj = setTimeout(() => ctrl.abort(), TIMEOUT_PETICION);
 
-        try {
-          const res = await fetch(`${API_BASE}${modelo}:generateContent?key=${API_KEY}`, {
-            method: "POST",
+          const res = await fetch(`${API_BASE}${modelo}`, {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
             signal: ctrl.signal
@@ -518,9 +516,8 @@
         };
         let texto = '';
 
-        try {
-          const res = await fetch(`${API_BASE}${modelo}:streamGenerateContent?alt=sse&key=${API_KEY}`, {
-            method: 'POST',
+          const res = await fetch(`${API_BASE}${modelo}:streamGenerateContent?alt=sse`, {
+            method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
             signal: ctrl.signal

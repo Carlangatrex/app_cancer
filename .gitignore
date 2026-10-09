@@ -17,4 +17,3 @@ local.properties
 .env
 config.js
 debug.keystore
-/web-netlify/

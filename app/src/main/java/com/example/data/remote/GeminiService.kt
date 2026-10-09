@@ -52,7 +52,9 @@ data class Candidate(
 )
 
 interface GeminiApiService {
-    @POST("v1beta/models/gemini-3.5-flash-lite:generateContent")
+    // Mismo modelo que el frontend web (gemini-flash-lite-latest) para que ambas
+    // plataformas se comporten igual.
+    @POST("v1beta/models/gemini-flash-lite-latest:generateContent")
     suspend fun generateContent(
         @Query("key") apiKey: String,
         @Body request: GenerateContentRequest
@@ -160,7 +162,7 @@ object CompanionPromptEngine {
             ""
         }
 
-        // Fiel al prompt común del prototipo web (test_gemini.html, getSystemPrompt()).
+        // Fiel al prompt común del prototipo web (web-netlify/index.html, getSystemPrompt()).
         // Si cambia un contenido, cambiar aquí: ambas plataformas deben hablar igual.
         return """
 Eres $avatarName, acompañante emocional del CUIDADOR PRIMARIO de una persona con cáncer. Tu lector no es la persona enferma: es el familiar que cuida. Este espacio es suyo.

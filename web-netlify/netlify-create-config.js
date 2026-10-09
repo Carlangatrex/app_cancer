@@ -2,11 +2,14 @@
 // config.js está en .gitignore: en local se usa el archivo real; en el build de
 // Netlify se recrea sin haberlo versionado nunca.
 const fs = require('fs');
+const path = require('path');
 
+// Escribe siempre junto a este script (web-netlify/), sin importar el cwd del build.
+const destino = path.join(__dirname, 'config.js');
 const key = (process.env.GEMINI_API_KEY || '').trim();
 
 fs.writeFileSync(
-  'config.js',
+  destino,
   '// Generado por netlify-create-config.js en el build de Netlify.\n' +
     'window.GEMINI_API_KEY = ' + JSON.stringify(key) + ';\n'
 );
