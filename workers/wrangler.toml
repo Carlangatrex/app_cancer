@@ -1,4 +1,4 @@
-name = "alma-gemini-proxy"
+name = "alma"
 main = "gemini-proxy.js"
 compatibility_date = "2025-10-08"
 

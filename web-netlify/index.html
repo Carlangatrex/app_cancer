@@ -156,10 +156,6 @@
       margin-left: auto;
       display: flex; align-items: center; gap: 10px;
     }
-    .header-divider {
-      width: 1px; height: 22px; background: var(--surface-variant);
-      margin: 0 2px; flex: none;
-    }
 
     .sos-button {
       background: #E53935;
@@ -341,11 +337,8 @@
       /* Objetivos táctiles más cómodos con el pulgar. */
       .quick-prompt { padding: 10px 12px; font-size: 13px; }
       .checkin-btn { padding: 12px; font-size: 15px; }
-      /* La cabecera apreta: menos aire entre botones y el selector de voz
-         pasa a segundo plano (el tono de voz sigue configurado). */
-      .header-actions { gap: 5px; }
-      .header-divider { margin: 0 1px; height: 18px; }
-      .voice-gender { display: none; }
+      /* La cabecera ya es mínima: solo apretar un poco el aire. */
+      .header-actions { gap: 7px; }
       .sos-button { padding: 5px 9px; font-size: 11px; }
     }
     /* --- Modales (check-in, micro-regulación, crisis) --- */
@@ -373,6 +366,18 @@
     .exercise-item:hover { border-color: var(--primary); }
     .exercise-item b { display: block; font-size: 14px; margin-bottom: 2px; }
     .exercise-item span { font-size: 12px; color: var(--on-surface-variant); }
+    /* Filas del menu "Más herramientas" */
+    .menu-item {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+      padding: 12px 14px; margin-bottom: 8px; border: 1px solid var(--surface-variant);
+      border-radius: 12px; background: var(--surface); font-family: inherit;
+      font-size: 15px; color: var(--on-surface); cursor: pointer; text-align: left;
+      touch-action: manipulation;
+    }
+    .menu-item:hover { border-color: var(--primary); }
+    .menu-item.active { background: var(--secondary-container); border-color: var(--secondary-container); }
+    .menu-item .menu-icono { font-size: 18px; width: 26px; text-align: center; flex: none; }
+    .menu-item select { margin-left: auto; font-size: 14px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--outline); background: var(--surface); color: var(--on-surface); font-family: inherit; height: auto; max-width: none; }
     .chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin: 14px 0 4px; }
     .chart .bar { flex: 1; background: var(--primary-container); border-radius: 6px 6px 0 0; min-height: 3px; }
     .chart-labels { display: flex; gap: 6px; font-size: 10px; color: var(--on-surface-variant); }
@@ -389,6 +394,20 @@
     .micro-phase .fase { font-size: 20px; font-weight: 600; }
     .micro-phase .segundos { font-size: 34px; font-weight: 300; color: var(--primary); }
     .micro-steps { font-size: 13px; color: var(--on-surface-variant); line-height: 1.6; margin: 10px 0; padding-left: 18px; }
+    /* --- ¿Qué digo yo? (frases para los demás) --- */
+    .frase-lista { list-style: none; margin: 8px 0 0; padding: 0 0 0 12px; display: grid; gap: 8px; }
+    .frase-lista li {
+      font-size: 14px; line-height: 1.55; background: var(--bg);
+      border-left: 3px solid var(--primary-container); border-radius: 0 10px 10px 0; padding: 8px 10px;
+    }
+    .frase-ia textarea {
+      width: 100%; min-height: 64px; resize: vertical; border: 1px solid var(--outline);
+      border-radius: 12px; padding: 10px; font-family: inherit; font-size: 16px;
+      color: var(--on-surface); background: var(--bg); margin-bottom: 8px;
+    }
+    .frase-ia textarea:focus { outline: none; border-color: var(--primary); }
+    .frase-ia-resultado { font-size: 14px; line-height: 1.6; margin-top: 10px; }
+    .frase-ia-error { font-size: 13px; color: var(--error); margin-top: 8px; }
     .modal .btn-principal {
       display: block; width: 100%; padding: 12px; margin-top: 10px;
       background: var(--primary); color: var(--on-primary); border: none;
@@ -423,46 +442,24 @@
           <p>Acompañante virtual</p>
         </div>
         <div class="header-actions">
-          <!-- Navegación -->
+          <!-- Lo esencial, a la vista: navegación, conversación, más herramientas y crisis -->
           <button class="header-icon-btn" id="home-button" onclick="volverInicio()" title="Volver al inicio (editar tus datos)" aria-label="Volver al inicio">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 10.5L12 3l9 7.5"></path>
               <path d="M5 9.5V21h14V9.5"></path>
             </svg>
           </button>
-          <span class="header-divider" aria-hidden="true"></span>
-          <!-- Herramientas de bienestar -->
-          <button class="header-icon-btn" id="checkin-button" onclick="abrirCheckin()" title="Mi semana: chequeo emocional" aria-label="Mi semana">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12h4l3-8 4 16 3-8h4"></path>
-            </svg>
-          </button>
-          <button class="header-icon-btn" id="micro-button" onclick="abrirMicro()" title="Tengo 2 minutos: micro-regulación" aria-label="Micro-regulación">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M12 7v5l3 3"></path>
-            </svg>
-          </button>
-          <span class="header-divider" aria-hidden="true"></span>
-          <!-- Conversación -->
           <button class="header-icon-btn" id="new-chat-button" onclick="nuevaConversacion()" title="Nueva conversación" aria-label="Nueva conversación">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 20h9"></path>
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
           </button>
-          <span class="header-divider" aria-hidden="true"></span>
-          <!-- Voz -->
-          <select class="voice-gender" id="voice-gender" onchange="cambiarVozGenero(this.value)" aria-label="Tono de voz" title="Tono de la voz del acompañante">
-            <option value="auto">Voz automática</option>
-            <option value="femenina">Voz femenina</option>
-            <option value="masculina">Voz masculina</option>
-          </select>
-          <button class="header-icon-btn" id="speak-button" onclick="toggleSpeakAloud()" aria-label="Leer respuestas en voz alta" title="Leer respuestas en voz alta">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          <button class="header-icon-btn" id="more-button" onclick="abrirMas()" title="Más herramientas" aria-label="Más herramientas">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+              <circle cx="19" cy="12" r="2"></circle>
             </svg>
           </button>
           <!-- Crisis: siempre al final y aparte, es un botón distinto a todo lo demás -->
@@ -534,6 +531,24 @@
       <h3>Mi semana</h3>
       <p class="modal-sub">Un registro de a cuánto va tu cuerpo y tu ánimo. Se queda solo en este navegador.</p>
       <div id="checkin-body"></div>
+    </div>
+  </div>
+
+  <!-- Modal: más herramientas -->
+  <div class="modal-overlay" id="modal-mas" onclick="if (event.target === this) cerrarModales()">
+    <div class="modal">
+      <button class="modal-close" onclick="cerrarModales()" aria-label="Cerrar">×</button>
+      <h3>Más herramientas</h3>
+      <p class="modal-sub">Lo que no necesita estar siempre a la vista, pero sí a un toque.</p>
+      <div id="mas-body"></div>
+    </div>
+  </div>
+
+  <!-- Modal: ¿qué digo yo? (frases para los demás) -->
+  <div class="modal-overlay" id="modal-frases" onclick="if (event.target === this) cerrarModales()">
+    <div class="modal">
+      <button class="modal-close" onclick="cerrarModales()" aria-label="Cerrar">×</button>
+      <div id="frases-body"></div>
     </div>
   </div>
 
@@ -1429,11 +1444,14 @@ ${lista}`;
     let vozPreferida = 'auto';
     let vocesDisponibles = [];
 
-    const speakButton = document.getElementById('speak-button');
+    // El control de lectura vive dentro del menú "Más" (se pinta dinámicamente),
+    // así que se busca en el momento de usarlo, nunca al cargar.
+    function speakButtonActual() {
+      return document.getElementById('speak-button');
+    }
     const voiceButton = document.getElementById('voice-button');
 
-    // Estado inicial del botón de lectura
-    if (speakAloud) speakButton.classList.add('active');
+    // Estado inicial de lectura: se refleja cuando se abra el menú (pintarMas).
 
     // Preferencia de tono de voz
     const voiceGenderSelect = document.getElementById('voice-gender');
@@ -1450,7 +1468,8 @@ ${lista}`;
     function toggleSpeakAloud() {
       speakAloud = !speakAloud;
       localStorage.setItem('speakAloud', speakAloud ? '1' : '0');
-      speakButton.classList.toggle('active', speakAloud);
+      const sb = speakButtonActual();
+      if (sb) sb.classList.toggle('active', speakAloud);
       if (!speakAloud && window.speechSynthesis) speechSynthesis.cancel();
     }
 
@@ -1977,6 +1996,157 @@ ${lista}`;
 
     function detenerMicro() {
       if (microTimer) { clearInterval(microTimer); microTimer = null; }
+    }
+
+    // ============ ¿QUÉ DIGO YO? (frases para los demás) ============
+    // Situaciones comunes del cuidador. Las frases son de repositorio (funcionan
+    // sin internet); la parte de abajo le pide a Alma frases a la medida.
+    const SITUACIONES_FRASES = [
+      {
+        id: 'nadie_pregunta',
+        titulo: 'Todos preguntan por el paciente y nadie por mí',
+        frases: [
+          'Gracias por preguntar por él. Y de mí te cuento: sostengo mucho, y de vez en cuando me cae bien que alguien lo vea.',
+          'Del paciente se ocupan los médicos; de mí me ocupo yo. Hoy voy con lo justo, pero voy.',
+          'Te lo digo sin rodeos: él está como está, y yo estoy cansada. Lo digo sin drama, pero lo digo.'
+        ]
+      },
+      {
+        id: 'se_fuerte',
+        titulo: 'Me dicen «sé fuerte» o «Dios no te da lo que no puedes»',
+        frases: [
+          'La fuerza la finjo en la sala de espera. Con la gente de confianza prefiero la verdad: es duro, y sigo.',
+          '«Sé fuerte» ya me lo dijeron diez veces hoy. Lo que de verdad me sirve es que me pregunten qué necesito.',
+          'No estoy siendo fuerte: estoy funcionando. Es distinto, y está bien decirlo.'
+        ]
+      },
+      {
+        id: 'opiniones',
+        titulo: 'Critican cómo cuido o dan opiniones no pedidas',
+        frases: [
+          'Las opiniones las escucho; las decisiones las tomamos con el médico y con él.',
+          'Gracias por las ganas de ayudar. Esto se lleva como podemos, no como lo vería nadie desde afuera.',
+          'Si quieres ayudar de verdad, te digo exactamente qué necesito: un turno cubierto el martes.'
+        ]
+      },
+      {
+        id: 'pedir_ayuda',
+        titulo: 'Necesito pedir ayuda o un relevo y me da culpa',
+        frases: [
+          'Necesito pedirte algo concreto: ¿puedes cubrirme el martes en la tarde? No es queja, es logística.',
+          'Si me reemplazas una tarde, la semana siguiente cuido mejor. No es debilidad: es matemática.',
+          'Voy a pedirlo sin culpa y sin explicar de más: necesito un relevo. ¿Cuándo puedes?'
+        ]
+      },
+      {
+        id: 'invitaciones',
+        titulo: 'Me invitan a cosas y no puedo, o no quiero ir',
+        frases: [
+          'Esta vez no puedo. No es que no quiera verlos: es que hoy gana el descanso.',
+          'Me encantaría, pero el cuerpo dice otra cosa. Otra vez con más calma.',
+          'Voy a faltar y no voy a dar explicaciones largas: hoy toca cuidarme a mí.'
+        ]
+      }
+    ];
+
+    function abrirFrases() {
+      abrirModal('modal-frases');
+      pintarFrases();
+    }
+
+    function pintarFrases() {
+      let html = '<h3>¿Qué digo yo?</h3>';
+      html += '<p class="modal-sub">Palabras para las situaciones que nadie te enseña a manejar: cuando preguntan por el paciente y no por ti, cuando te sueltan un cliché, cuando toca pedir ayuda. Toca una situación para ver frases que puedes usar tal cual o adaptar.</p>';
+      SITUACIONES_FRASES.forEach(function (s) {
+        html += '<div class="exercise-item" onclick="alternarFrases(\'' + s.id + '\')"><b>' + s.titulo + '</b>';
+        html += '<div id="frases-' + s.id + '" hidden><ul class="frase-lista">';
+        s.frases.forEach(function (f) { html += '<li>' + f + '</li>'; });
+        html += '</ul></div></div>';
+      });
+      html += '<div class="frase-ia" style="margin-top:16px;">';
+      html += '<b style="font-size:14px;">¿Tu situación no está aquí?</b>';
+      html += '<textarea id="frases-input" placeholder="Cuéntale a Alma qué te dijeron o qué te toca responder…"></textarea>';
+      html += '<button class="btn-principal" onclick="pedirFrasesAlma()">Pedirle frases a Alma</button>';
+      html += '<div id="frases-ia-resultado"></div>';
+      html += '</div>';
+      document.getElementById('frases-body').innerHTML = html;
+    }
+
+    function alternarFrases(id) {
+      const el = document.getElementById('frases-' + id);
+      if (el) el.hidden = !el.hidden;
+    }
+
+    async function pedirFrasesAlma() {
+      const situacion = (document.getElementById('frases-input').value || '').trim();
+      const salida = document.getElementById('frases-ia-resultado');
+      if (!situacion || !salida) return;
+
+      salida.innerHTML = '<p style="font-size:13px; color:var(--on-surface-variant);">Pensando frases…</p>';
+      const trinchera = (localStorage.getItem('trenchContext') || '').trim();
+      const sistema =
+        'Eres ' + companionName + ', acompañante de una persona que cuida a un familiar con cáncer. Esa persona necesita PALABRAS PARA DECIR A OTRAS PERSONAS (no para ti). Situación que plantea: "' + situacion + '".' +
+        (trinchera ? ' Contexto de su vida: ' + trinchera + '.' : '') +
+        ' Devuelve exactamente 3 frases cortas que ella pueda decir en voz alta o por mensaje. Reglas: dignas, habladas, sin victimismo y sin agresividad; prohibido "sé fuerte", "todo pasa por algo", "Dios no te da lo que no puedes" y cualquier cliché; que no pidan disculpas por existir; si la situación lo pide, que pidan ayuda concreta. Una frase por línea, sin numerar, sin comillas, sin explicaciones.';
+
+      try {
+        const ctrl = new AbortController();
+        const reloj = setTimeout(function () { ctrl.abort(); }, 30000);
+        const res = await fetch('/api/gemini?model=gemini-flash-lite-latest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: 'Genera las 3 frases para esta situación.' }] }],
+            systemInstruction: { parts: [{ text: sistema }] },
+            generationConfig: { temperature: 0.9 }
+          }),
+          signal: ctrl.signal
+        });
+        clearTimeout(reloj);
+        const data = await res.json();
+        const texto = data && data.candidates && data.candidates[0] && data.candidates[0].content &&
+          data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+        if (!texto) throw new Error('respuesta vacía');
+        const lineas = texto.split('\n').map(function (l) { return l.replace(/^[\-\d\.\)\s]+/, '').trim(); }).filter(function (l) { return l.length > 8; }).slice(0, 3);
+        salida.innerHTML = lineas.length
+          ? '<ul class="frase-lista">' + lineas.map(function (l) { return '<li>' + l.replace(/</g, '&lt;') + '</li>'; }).join('') + '</ul>'
+          : '<p class="frase-ia-error">Alma no logró formular frases esta vez. Intenta de nuevo con más detalle.</p>';
+      } catch (e) {
+        salida.innerHTML = '<p class="frase-ia-error">No pude generar frases ahora. Si estás sin conexión, las frases de arriba funcionan igual.</p>';
+      }
+    }
+
+    // ============ MENÚ "MÁS HERRAMIENTAS" ============
+    // La cabecera solo muestra lo esencial (inicio, nueva conversación, más,
+    // SOS). Las herramientas de bienestar viven aquí, a un toque.
+    function abrirMas() {
+      abrirModal('modal-mas');
+      pintarMas();
+    }
+
+    function pintarMas() {
+      const filas = [
+        { icono: '📈', texto: 'Mi semana: chequeo emocional', accion: "abrirCheckin()" },
+        { icono: '🕐', texto: 'Tengo 2 minutos: micro-regulación', accion: "abrirMicro()" },
+        { icono: '💬', texto: '¿Qué digo yo? Frases para los demás', accion: "abrirFrases()" }
+      ];
+      let html = '';
+      filas.forEach(function (f) {
+        html += '<button class="menu-item" onclick="cerrarModales(); ' + f.accion + '">';
+        html += '<span class="menu-icono">' + f.icono + '</span><span>' + f.texto + '</span></button>';
+      });
+      // Leer en voz alta: fila-togle; se repinta para reflejar el estado.
+      html += '<button class="menu-item' + (speakAloud ? ' active' : '') + '" id="speak-button" onclick="toggleSpeakAloud(); pintarMas();">';
+      html += '<span class="menu-icono">' + (speakAloud ? '🔊' : '🔇') + '</span><span>Leer respuestas en voz alta: ' + (speakAloud ? 'sí' : 'no') + '</span></button>';
+      html += '<div class="menu-item" style="cursor:default;">';
+      html += '<span class="menu-icono">🎙️</span><span>Tono de la voz</span>';
+      html += '<select class="voice-gender" id="voice-gender" onchange="cambiarVozGenero(this.value)" aria-label="Tono de voz">';
+      html += '<option value="auto">Automática</option><option value="femenina">Femenina</option><option value="masculina">Masculina</option>';
+      html += '</select></div>';
+      document.getElementById('mas-body').innerHTML = html;
+      // Restaurar la preferencia guardada en el selector
+      const sel = document.getElementById('voice-gender');
+      if (sel) sel.value = vozPreferida;
     }
 
     // Inicializar
