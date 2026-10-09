@@ -149,13 +149,19 @@
 
     .avatar-info {
       display: flex; flex-direction: column; align-items: flex-start;
-      /* Puede encoger en pantallas chicas; el nombre se corta con puntos. */
-      flex: 0 1 auto; min-width: 0;
+      /* Ocupa exactamente el espacio sobrante y se recorta: así los botones
+         jamás montan encima. flex-basis 0 + min-width 0 lo hacen ceder. */
+      flex: 1 1 0; min-width: 0; overflow: hidden;
     }
     .avatar-info h2 {
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       max-width: 100%;
     }
+    .avatar-info p {
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .edit-icon { font-size: 13px; cursor: pointer; opacity: 0.7; }
     .avatar-info h2 { margin: 0; font-size: 17px; font-weight: 500; color: var(--on-surface); }
     .avatar-info p { margin: 2px 0 0; font-size: 11px; color: var(--on-surface-variant); }
 
@@ -347,7 +353,7 @@
       .checkin-btn { padding: 12px; font-size: 15px; }
       /* La cabecera cabe en el ancho de un celular: botones y avatar compactos. */
       .header { gap: 8px; padding: 12px; }
-      .header-actions { gap: 5px; margin-left: auto; }
+      .header-actions { gap: 5px; margin-left: auto; flex-shrink: 0; }
       .header-icon-btn { width: 34px; height: 34px; }
       .header-icon-btn svg { width: 15px; height: 15px; }
       .avatar-display { width: 44px; height: 44px; }
