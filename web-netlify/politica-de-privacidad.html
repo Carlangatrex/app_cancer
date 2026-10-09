@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Política de Privacidad · Respiro</title>
+  <meta name="description" content="Cómo Respiro gestiona la información de quienes cuidan: privacidad por diseño, datos locales y sin registro.">
+  <meta name="theme-color" content="#6750a4">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --on-surface: #1a1a1a;
+      --primary: #6750a4;
+      --on-surface-variant: #212121;
+      --surface-variant: #e0e0e0;
+    }
+    * { box-sizing: border-box; }
+    html, body { overflow-x: hidden; }
+    body {
+      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--on-surface);
+      margin: 0; padding: 20px; min-height: 100vh;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+      line-height: 1.65;
+    }
+    .hoja { max-width: 760px; margin: 0 auto; background: var(--surface); border-radius: 20px; padding: 32px 26px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    h1 { font-size: 24px; margin: 0 0 4px; }
+    .actualizacion { font-size: 13px; color: #555; margin: 0 0 24px; }
+    h2 { font-size: 17px; margin: 28px 0 8px; color: var(--primary); }
+    p, li { font-size: 15px; }
+    ul { padding-left: 22px; margin: 8px 0; }
+    li { margin-bottom: 8px; }
+    b { font-weight: 600; }
+    .aviso {
+      background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 0 10px 10px 0;
+      padding: 12px 14px; font-size: 14px; margin: 10px 0;
+    }
+    a { color: var(--primary); }
+    .volver {
+      display: inline-block; margin-top: 28px; padding: 10px 18px; border-radius: 12px;
+      background: var(--primary); color: #fff; text-decoration: none; font-size: 14px; font-weight: 600;
+    }
+    footer { text-align: center; font-size: 12px; color: #666; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="hoja">
+    <h1>Política de Privacidad de Respiro</h1>
+    <p class="actualizacion">Última actualización: Octubre de 2026</p>
+
+    <p>En Respiro nos tomamos en serio la intimidad y la carga emocional de quienes cuidan a un familiar con enfermedad física o compleja. Esta Política de Privacidad describe cómo se gestiona la información cuando utilizas nuestra aplicación web progresiva (PWA).</p>
+
+    <h2>1. Principio de Privacidad por Diseño (Privacy by Design)</h2>
+    <p>Nuestra arquitectura técnica está diseñada para reducir al mínimo la recolección de datos personales sensibles:</p>
+    <ul>
+      <li><b>Almacenamiento local:</b> el historial de tus conversaciones, las notas de contexto y la configuración de la aplicación viven exclusivamente en el almacenamiento local de tu dispositivo (localStorage).</li>
+      <li><b>Sin registro de usuarios:</b> no solicitamos correo electrónico, número telefónico, nombre real ni contraseñas para utilizar la aplicación básica.</li>
+      <li><b>Sin base de datos central:</b> Respiro no guarda copias de tus chats en un servidor propio ni en bases de datos externas administradas por nosotros.</li>
+    </ul>
+
+    <h2>2. Procesamiento de mensajes mediante inteligencia artificial</h2>
+    <p>Para generar respuestas empáticas y contextuales, la aplicación envía el texto de tus mensajes a través de un proxy seguro (Cloudflare Worker) hacia la API de lenguaje de Google Gemini.</p>
+    <ul>
+      <li><b>Tránsito seguro:</b> las comunicaciones entre tu dispositivo y el servidor proxy están cifradas mediante protocolo HTTPS/TLS.</li>
+      <li><b>Uso del proxy:</b> el proxy intermedio únicamente valida la ruta de la petición y adjunta credenciales de acceso de forma segura. No almacena el contenido de tus conversaciones ni asocia tu dirección IP con tu historial.</li>
+      <li><b>Tratamiento por terceros (Google Gemini):</b> los mensajes son procesados por la API de Google Gemini conforme a los <a href="https://policies.google.com/terms" target="_blank" rel="noopener">términos de servicio de Google</a>.</li>
+    </ul>
+    <div class="aviso"><b>Importante:</b> en el nivel gratuito de la API de Gemini, Google puede utilizar el contenido de las solicitudes para mejorar sus productos y servicios. Por eso te recomendamos no escribir en el chat datos que identifiquen a tu familiar o a ti (nombres completos, direcciones, números de documentos). Si prefieres evitar este tratamiento por completo, puedes usar la aplicación sin conexión al chat: los ejercicios, el chequeo emocional y las líneas de ayuda funcionan igual.</div>
+
+    <h2>3. Uso del micrófono y funciones de voz</h2>
+    <ul>
+      <li><b>Dictado por voz:</b> el procesamiento de voz a texto utiliza las funciones nativas del navegador web de tu dispositivo (Web Speech API). El audio se convierte a texto localmente o a través del proveedor del navegador (p. ej. Google Chrome) y no es grabado ni almacenado en nuestros servidores.</li>
+      <li><b>Lectura en voz alta:</b> la síntesis de voz genera audio directamente en tu dispositivo utilizando los motores de voz instalados en tu sistema operativo.</li>
+    </ul>
+
+    <h2>4. Retención y control de datos</h2>
+    <p>Dado que los datos residen en tu navegador:</p>
+    <ul>
+      <li>Puedes eliminar todo tu historial de conversación en cualquier momento con el botón de <i>Nueva conversación</i> dentro de la app, o borrando los datos de navegación de tu navegador.</li>
+      <li>Si desinstalas la PWA o limpias la caché del navegador, el historial se elimina de forma permanente e irreversible.</li>
+    </ul>
+
+    <h2>5. Protocolo de crisis y seguridad</h2>
+    <p>Respiro es una herramienta de acompañamiento emocional y no sustituye la atención médica, psiquiátrica ni psicológica profesional.</p>
+    <p>Si la aplicación detecta expresiones que sugieran ideación suicida o autodaño, mostrará de forma automática tarjetas informativas con líneas telefónicas de emergencia y redes de apoyo gratuitas según el país del usuario. Respiro no notifica automáticamente a autoridades ni a terceros, ya que no recopila datos de geolocalización en tiempo real ni identidades reales.</p>
+
+    <h2>6. Cumplimiento normativo</h2>
+    <p>Esta política se adecúa a los principios de libertad, veracidad, transparencia y seguridad regulados por la <b>Ley 1581 de 2012 de Colombia</b> (Estatuto de Protección de Datos Personales) y los estándares internacionales de protección de datos sensibles en salud.</p>
+
+    <h2>7. Contacto</h2>
+    <p>Si tienes preguntas o comentarios sobre el funcionamiento técnico o la privacidad de esta aplicación, puedes ponerte en contacto con el equipo desarrollador en:</p>
+    <p><b>Correo electrónico:</b> <a href="mailto:carlangatrex@gmail.com">carlangatrex@gmail.com</a></p>
+
+    <a class="volver" href="./index.html">← Volver a Respiro</a>
+  </div>
+  <footer>Respiro · Acompañamiento emocional para quien cuida</footer>
+</body>
+</html>

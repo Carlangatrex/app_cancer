@@ -7,6 +7,7 @@
 const CACHE = 'alma-v4';
 const PRECACHE = [
   './index.html',
+  './politica-de-privacidad.html',
   './icon-192.png',
   './icon-512.png',
   './gemini-svg.svg',

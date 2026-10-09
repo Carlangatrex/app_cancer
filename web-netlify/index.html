@@ -452,7 +452,7 @@
       <input type="text" class="companion-name-input" id="user-name" placeholder="¿Cómo te llamas? (opcional)" aria-label="Tu nombre">
       <input type="text" class="companion-name-input" id="trench-context" placeholder="¿En qué momento de cuidado estás? (opcional)" aria-label="Tu contexto de cuidado">
       <button class="start-btn" onclick="startApp()">Comenzar</button>
-      <p class="onboarding-note">Esto se queda solo en tu dispositivo: nada de esto sale de este navegador.</p>
+      <p class="onboarding-note">Esto se queda solo en tu dispositivo: nada de esto sale de este navegador. <a href="politica-de-privacidad.html" target="_blank" rel="noopener">Política de privacidad</a></p>
     </div>
 
     <!-- --- Chat Area (shown after onboarding) --- -->
@@ -2210,6 +2210,11 @@ ${lista}`;
       // Restaurar la preferencia guardada en el selector
       const sel = document.getElementById('voice-gender');
       if (sel) sel.value = vozPreferida;
+      // Enlace a la politica de privacidad
+      const mas = document.getElementById('mas-body');
+      if (mas) mas.insertAdjacentHTML('beforeend',
+        '<a class="menu-item" href="politica-de-privacidad.html" target="_blank" rel="noopener" style="text-decoration:none;">' +
+        '<span class="menu-icono">🔒</span><span>Política de privacidad</span></a>');
     }
 
     function copiarEnlace() {
