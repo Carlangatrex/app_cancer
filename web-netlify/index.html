@@ -570,6 +570,20 @@
     </div>
   </div>
 
+  <!-- Modal: permiso de microfono -->
+  <div class="modal-overlay" id="modal-mic" onclick="if (event.target === this) cerrarModales()">
+    <div class="modal">
+      <button class="modal-close" onclick="cerrarModales()" aria-label="Cerrar">×</button>
+      <h3>Activar el micrófono</h3>
+      <p class="modal-sub">El navegador bloqueó el acceso. Para dictarle a tu acompañante:</p>
+      <div class="hotline"><b>1.</b> Toca el candado 🔒 (o el ⓘ) junto a la dirección del sitio, arriba de la pantalla.</div>
+      <div class="hotline"><b>2.</b> En <i>Permisos</i>, elige <i>Micrófono</i> y márcalo como <i>Permitir</i>.</div>
+      <div class="hotline"><b>3.</b> Recarga la página y vuelve a tocar el micrófono.</div>
+      <p class="modal-sub" style="margin:12px 0 0;">Si abriste esta página desde WhatsApp u otra app, el micrófono suele estar bloqueado: cópiala y ábrela directamente en Chrome.</p>
+      <button class="btn-principal" onclick="copiarEnlace()">Copiar el enlace para abrirlo en Chrome</button>
+    </div>
+  </div>
+
   <!-- Modal: más herramientas -->
   <div class="modal-overlay" id="modal-mas" onclick="if (event.target === this) cerrarModales()">
     <div class="modal">
@@ -1653,7 +1667,9 @@ ${lista}`;
       if (window.speechSynthesis) speechSynthesis.cancel();
 
       recognition = new SpeechRec();
-      recognition.lang = 'es-MX';
+      // Idioma del telefono si es español (acentos regionales); respaldo es-MX.
+      const idioma = navigator.language || 'es-MX';
+      recognition.lang = idioma.indexOf('es') === 0 ? idioma : 'es-MX';
       recognition.interimResults = true;
       recognition.continuous = true;
 
@@ -1676,9 +1692,9 @@ ${lista}`;
 
       recognition.onerror = (e) => {
         console.warn('Reconocimiento de voz:', e.error);
-        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
           detenerGrabacion();
-          addMessage('No pude acceder al micrófono. Revisa el permiso de voz del navegador.', false);
+          abrirModal('modal-mic');
         }
       };
 
@@ -2194,6 +2210,20 @@ ${lista}`;
       // Restaurar la preferencia guardada en el selector
       const sel = document.getElementById('voice-gender');
       if (sel) sel.value = vozPreferida;
+    }
+
+    function copiarEnlace() {
+      const url = location.href;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () {
+          setStatus('Enlace copiado. Ábrelo en Chrome.');
+        }).catch(function () {
+          setStatus(url);
+        });
+      } else {
+        setStatus(url);
+      }
+      cerrarModales();
     }
 
     // Enter en el campo de nombre guarda
