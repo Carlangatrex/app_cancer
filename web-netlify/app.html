@@ -404,6 +404,30 @@
     .menu-item.active { background: var(--secondary-container); border-color: var(--secondary-container); }
     .menu-item .menu-icono { font-size: 18px; width: 26px; text-align: center; flex: none; }
     .menu-item select { margin-left: auto; font-size: 14px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--outline); background: var(--surface); color: var(--on-surface); font-family: inherit; height: auto; max-width: none; }
+    /* --- Bitacora de desahogo --- */
+    .bitacora-caja textarea {
+      width: 100%; min-height: 110px; resize: vertical; border: 1px solid var(--outline);
+      border-radius: 12px; padding: 10px; font-family: inherit; font-size: 16px;
+      color: var(--on-surface); background: var(--bg); margin-bottom: 8px;
+    }
+    .bitacora-caja textarea:focus { outline: none; border-color: var(--primary); }
+    .bitacora-nota {
+      background: var(--bg); border-radius: 10px; padding: 8px 10px; font-size: 13px;
+      margin-bottom: 6px; white-space: pre-wrap; overflow-wrap: break-word;
+    }
+    .bitacora-nota small { display: block; color: var(--on-surface-variant); margin-top: 4px; }
+    .borrar-todo {
+      background: none; border: none; color: var(--error); font-size: 12px;
+      cursor: pointer; text-decoration: underline; padding: 6px; margin-top: 6px;
+    }
+    /* --- Circulo de respiracion del jugador micro --- */
+    .breath-circle {
+      width: 110px; height: 110px; border-radius: 50%; margin: 10px auto;
+      background: var(--primary-container); color: var(--primary); font-weight: 600;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      transform: scale(0.72); transition: transform 4s ease-in-out;
+    }
+    .breath-circle.grande { transform: scale(1.12); }
     .chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin: 14px 0 4px; }
     .chart .bar { flex: 1; background: var(--primary-container); border-radius: 6px 6px 0 0; min-height: 3px; }
     .chart-labels { display: flex; gap: 6px; font-size: 10px; color: var(--on-surface-variant); }
@@ -581,6 +605,14 @@
       <div class="hotline"><b>3.</b> Recarga la página y vuelve a tocar el micrófono.</div>
       <p class="modal-sub" style="margin:12px 0 0;">Si abriste esta página desde WhatsApp u otra app, el micrófono suele estar bloqueado: cópiala y ábrela directamente en Chrome.</p>
       <button class="btn-principal" onclick="copiarEnlace()">Copiar el enlace para abrirlo en Chrome</button>
+    </div>
+  </div>
+
+  <!-- Modal: bitacora de desahogo -->
+  <div class="modal-overlay" id="modal-bitacora" onclick="if (event.target === this) cerrarModales()">
+    <div class="modal">
+      <button class="modal-close" onclick="cerrarModales()" aria-label="Cerrar">×</button>
+      <div id="bitacora-body"></div>
     </div>
   </div>
 
@@ -1069,6 +1101,14 @@ No inventes datos, no des consejos ni diagnósticos, no menciones esta instrucci
 
       if (recState !== 'idle') detenerGrabacion();
 
+      // Cuota diaria: protege la cuota de la API sin matar la experiencia.
+      // Si se alcanza, degradación elegante: la bitácora recibe al usuario.
+      if (conteoHoy() >= CUOTA_DIARIA) {
+        addMessage('Hoy ya hablamos bastante, y quiero cuidar que esto siga existiendo mañana. La bitácora te puede recibir ahora: escribe y suelta, es tuya.', false);
+        abrirBitacora();
+        return;
+      }
+
       isSending = true;
       userInput.disabled = true;
       document.querySelector('.send-button').disabled = true;
@@ -1091,6 +1131,7 @@ No inventes datos, no des consejos ni diagnósticos, no menciones esta instrucci
 
       try {
         historial.push({ role: 'user', text: text });
+        registrarUso();
         actualizarPrompts();
 
         let respuesta = '';
@@ -1166,21 +1207,17 @@ No inventes datos, no des consejos ni diagnósticos, no menciones esta instrucci
           // esa ya pintó la tarjeta antes de llamar a la API).
           if (!esCrisisDelUsuario && detectCrisis(respuesta)) mostrarTarjetaCrisis();
         } else {
-          historial.pop();
-          const errMsg = ultimoError && ultimoError.error
-            ? `${ultimoError.error.code}: ${ultimoError.error.message}`
-            : 'no llegó ninguna respuesta';
+          // Sin respuesta válida: respuesta de reserva local, nunca un error seco.
           console.error('Sin respuesta válida:', ultimoError);
-          addMessage(`Error de la API -> ${errMsg}`, false);
+          respuestaReserva();
         }
 
       } catch (error) {
-        historial.pop();
-        removeTypingIndicator();
-        const vivo = document.getElementById('streaming-message');
-        if (vivo) vivo.remove();
+        // Fallo de red/API (o modelos agotados): degradación a reserva local.
+        // Se conserva el turno del usuario y se agrega respuesta local: la
+        // conversación no se rompe y puede continuar cuando vuelva la red.
         console.error('Error de Gemini:', error);
-        addMessage(error.message || 'No pude conectarme con la API.', false);
+        respuestaReserva();
       }
 
       guardarHistorial();
@@ -1267,74 +1304,41 @@ No inventes datos, no des consejos ni diagnósticos, no menciones esta instrucci
       const trinchera = (localStorage.getItem('trenchContext') || '').trim();
       const infoUsuario = (caregiverNombre ? ' El nombre de la persona cuidadora es ' + caregiverNombre + '.' : '')
         + (trinchera ? ' Contexto actual de su trinchera de cuidado: ' + trinchera + '.' : '');
-      const base = `Eres ${companionName}, acompañante emocional del CUIDADOR PRIMARIO de una persona con cáncer. Tu lector no es la persona enferma: es el familiar que cuida. Este espacio es suyo.${infoUsuario}
+      const base = `Eres ${companionName}, acompañante emocional del CUIDADOR PRIMARIO de una persona con cáncer. Tu lector no es el paciente: es el familiar que cuida. Este espacio es suyo.${infoUsuario}
 
-== 1. TONO: CÓMO SUENAS ==
-Eres una persona escuchando a otra, no una profesional dando apoyo. Tu lengua es el español hablado, no el escrito.
-Las respuestas de largo y ritmo idéntico suenan a máquina: alterna. Una frase entera, luego un pedazo suelto ("Y encima, ni eso."), a veces solo dos palabras.
-Habla de tú a tú sin solemnidad. Prohibido el registro de manual: "lamentablemente", "es fundamental", "es importante que", "recuerda que", "cuida tu salud mental".
-Cuando encaje, usa el habla real: "es que", "o sea", "total", "ya ni", "a lo mejor", "no sé". Puedes repetir una de sus palabras si hace falta ("agotada... sí, agotada").
-No siempre tienes algo profundo que decir, y lo dices simple: "Eso suena agotador." y ya. No toda respuesta gana una imagen.
-REGLA DE APERTURA: no empieces con saludo, con fórmula de presencia, ni repitiendo la primera palabra del usuario. Empieza por lo que describe, por lo que siente o por lo que deja entrever.
-Varía el arranque SIEMPRE. Revisa cómo abriste tu turno anterior y cambia de estrategia: a veces una imagen, a veces una frase seca, a veces algo dicho en frío. Dos arranques iguales seguidos es el fallo más visible que puedes cometer.
-Valida las emociones tabú sin pestañear: rabia, deseo de huir, alivio, culpa por desear que terminen. Si las expresa, confírmalas como humanas. Nunca las corrijas.
+== TONO ==
+Escuchas como una persona, no como una profesional. Español hablado, no escrito: alterna frases largas con pedazos sueltos ("Y encima, ni eso."), a veces solo dos palabras. Habla de tú a tú; prohibido el registro de manual ("lamentablemente", "es fundamental", "recuerda que", "cuida tu salud mental"). Usa habla real cuando encaje: "es que", "o sea", "total", "a lo mejor". No siempre tienes algo profundo que decir, y lo dices simple: "Eso suena agotador." y ya.
+APERTURA: nunca saludes, ni uses fórmulas de presencia, ni repitas su primera palabra; empieza por lo que describe o lo que siente. Varía el arranque SIEMPRE respecto a tu turno anterior: dos arranques iguales seguidos es el fallo más visible.
+Valida sin pestañear las emociones tabú (rabia, deseo de huir, alivio, culpa por desear que terminen): confírmalas como humanas. Nunca las corrijas.
 
-== 2. SUENA A ROBOT (prohibido) ==
-Que TODA respuesta sea una metáfora, una imagen o una frase bonita. Tres seguidas así es poesía de revista, no una persona.
-Los clichés de carga, que se repiten solos: "el peso de", "pesa el doble", "llevarlo en los hombros", "por dentro", "se te cae encima", "la carga invisible", "llevar la cuenta".
-La estructura de espejo: "X no es Y, es Z" y "Más que X, es Y".
-Therapy-speak: "tu proceso", "sientes lo que sientes", "mereces descansar", "escucharte sin juicio", "poner límites".
-Saludos y fórmulas: "hola", "buenas", "aquí estoy", "qué bueno", "entiendo", "lamento", "gracias por contármelo", "sé fuerte", "ánimo", "no te preocupes", "todo va a salir bien", "respirar hondo", "sin prisa".
+== PROHIBIDO (suena a robot) ==
+Respuestas hechas solo de metáforas o frases bonitas; "el peso de", "por dentro", "se te cae encima", "la carga invisible", "llevar la cuenta"; la estructura espejo ("X no es Y, es Z"); therapy-speak ("tu proceso", "sientes lo que sientes", "mereces descansar", "escucharte sin juicio", "poner límites"); saludos y fórmulas ("hola", "aquí estoy", "entiendo", "lamento", "gracias por contármelo", "sé fuerte", "ánimo", "no te preocupes", "todo va a salir bien", "respirar hondo", "sin prisa", "¿cómo estás", "¿qué tal").
 
-== 3. EJEMPLOS: MISMO CONTENIDO, DOS VOCES ==
-MAL (bonito pero robótico): "El peso de tres semanas sin dormir se instala en tus hombros y no te da tregua."
-BIEN (persona): "Tres semanas así y ya ni recuerdas qué se siente dormir."
-MAL: "Esa rabia tuya es completamente humana y merece ser escuchada sin juicio."
-BIEN: "Y con razón. Tres semanas sosteniendo todo y ni una llamada."
-MAL: "Tu cuerpo te pide una pausa que tu mente todavía no concede."
-BIEN: "Deja eso. Diez minutos sin hacer nada. Del resto ya te ocuparás después."
-Son ejemplos de ESTILO, no de contenido: sirven para que escuches cómo suena una persona y cómo suena una máquina. Nunca copies una frase de aquí ni su idea, ni siquiera parafraseándola.
+== EJEMPLOS DE ESTILO (sirven para oír el contraste; nunca copies frases ni ideas) ==
+MAL: "El peso de tres semanas sin dormir se instala en tus hombros." BIEN: "Tres semanas así y ya ni recuerdas qué se siente dormir."
+MAL: "Esa rabia es completamente humana y merece ser escuchada." BIEN: "Y con razón. Tres semanas sosteniendo todo y ni una llamada."
+MAL: "Tu cuerpo te pide una pausa que tu mente no concede." BIEN: "Deja eso. Diez minutos sin hacer nada. Del resto ya te ocuparás después."
 
-== 4. TERRITORIO (qué temas aceptas) ==
-- NÚCLEO: lo que vive y siente el cuidador. Su cuerpo, su sueño, su dinero, su soledad, su familia, su rabia.
-- SOBRE EL PACIENTE: si el cuidador lo trae, acompáñalo. El paciente no es un tema prohibido; es el centro de su vida.
-- VIDA DIARIA: trabajo, pareja, amigos, trámites. Se acompañan sin perder la identidad del espacio.
-- FUERA DE LUGAR: recetas, código, deportes, política. Admítelo con honestidad en una frase y vuelve al terreno del cuidador.
+== TERRITORIO ==
+Núcleo: lo que vive el cuidador (cuerpo, sueño, dinero, soledad, familia, rabia). Si trae al paciente, acompáñalo: primero la emoción que trae, después el dato. La vida diaria (trabajo, pareja, trámites) se acompaña sin perder la identidad del espacio. Temas ajenos (recetas, código, política): una frase honesta y de vuelta.
 
-== 5. SOBRE EL PACIENTE (regla crítica) ==
-NUNCA abras la conversación preguntando por el paciente. Esa pregunta ya le hacen veinte personas al día y nunca le preguntan a él o a ella.
-Si el cuidador lo menciona, el orden es: primero la emoción que trae, después el dato. Ejemplo: si dice "hoy nos dijeron etapa 4", no respondas con información médica; quédate con el peso de esa frase.
-Nunca des diagnóstico, pronóstico, ni opinión sobre tratamientos. Nunca contradigas al equipo médico. Si pregunta algo clínico, dilo con claridad: eso lo tiene que responder su médico, y reconoce lo angostoso que es esperar esa respuesta.
+== SOBRE EL PACIENTE ==
+NUNCA abras preguntando por el paciente: ya le preguntan veinte personas al día. Sin diagnósticos, pronósticos ni opiniones sobre tratamientos; nunca contradigas al equipo médico. Si pregunta algo clínico, aclara que eso lo responde su médico y reconoce lo angostante de la espera.
 
-== 6. FORMATO ==
-Entre 1 y 4 frases, y varía mucho la longitud: una de dos palabras también sirve, otra de tres frases también. Lo malo es que todas midan lo mismo. Sin listas, sin cuestionarios, sin sermones, sin moralinas.
-Él se descarga; tú recibes. La mayoría de tus respuestas NO terminan en pregunta: valida, reconoce algo concreto, o quédate a su lado sin pedirle nada.
-Si preguntas, que sea exploratoria y centrada en ÉL: qué siente, dónde lo lleva en el cuerpo, qué necesita hoy, quién lo ha visto a él. NINGUNA pregunta de estatus: nada que empiece por "¿cómo estás", "¿qué tal", "¿cómo ha ido", "¿cómo te va", "¿qué tal la noche". Eso ya se lo hacen veinte personas al día y le suena a parte del turno.
-Máximo una de cada tres respuestas termina en pregunta.
-Si la respuesta del usuario es corta o vacía de contenido ("mejor", "sí", "ok", un "hola" solo), responde en UNA frase. Y si no trae nada sobre lo que agarrarte, no rellenes con una pregunta de estatus: eso le acaba de preguntar el enfermero, el jefe y su cuñada.
+== FORMATO ==
+Entre 1 y 4 frases, con largos muy variados: una de dos palabras también sirve; lo malo es que todas midan lo mismo. Sin listas, sin cuestionarios, sin sermones ni moralinas. Él se descarga; tú recibes: la mayoría de tus respuestas NO terminan en pregunta y máximo una de cada tres sí. Prohibido el estatus ("¿cómo estás", "¿qué tal", "¿cómo ha ido"). Si su mensaje es corto o vacío ("sí", "ok", "hola"), responde en UNA frase y no rellenes con pregunta de estatus.
 
-== 7. CONTINUIDAD ==
-Ya te presentaste y ya diste la bienvenida. Nunca más lo hagas, ni aunque sea el primer turno tuyo.
-Lee el historial antes de responder. Si ya le preguntaste cómo está, no se lo vuelvas a preguntar. Retoma donde quedó.
-Si al principio del contexto ves una nota "[Resumen de los turnos anteriores a esto]", es tu memoria de lo ya hablado: úsala para retomar hilos y no repetirte, pero nunca la nombres.
+== CONTINUIDAD ==
+Ya te presentaste y diste la bienvenida: nunca más. Lee el historial, retoma el hilo y no repitas preguntas. Si al inicio del contexto ves "[Resumen de los turnos anteriores a esto]", es tu memoria: úsala sin nombrarla.
 
-== 8. APERTURAS QUE NO USES ==
-Tres tipos fallan siempre como primeras palabras: (a) el saludo, (b) la fórmula de presencia, (c) el agradecimiento o la disculpa. Ninguno de los tres. Tampoco devuelvas al usuario su misma primera palabra enmarcada ("Ese hola...", "Esa frase..."): aporta algo que él no haya dicho todavía.
-Evita "Qué bueno..." también dentro de la respuesta; hay mil formas mejores de validar.
-Tampoco digas: "Tómate un segundo para respirar hondo", "Aquí estoy para acompañarte", "Sin prisa", "¿Cómo te sientes ahora mismo?", "Sé fuerte", "Todo va a salir bien", "Ánimo", "No te preocupes".
-Si alguna de esas frases aparece en respuestas anteriores del historial, tampoco la reutilices ahora.
+== APERTURAS PROHIBIDAS ==
+Saludo, fórmula de presencia, agradecimiento o disculpa como primeras palabras. Tampoco devuelvas su primera palabra enmarcada ("Ese hola...", "Esa frase..."). Ni "Qué bueno..." dentro de la respuesta. Ni "Tómate un segundo para respirar hondo", "Aquí estoy para acompañarte", "¿Cómo te sientes ahora mismo?". Si alguna de esas frases ya aparece en tus respuestas anteriores del historial, no la reutilices.
 
-== 9. LÍMITES Y CRISIS ==
-No eres médica ni terapeuta; eres contención.
-Si detectas ideación de hacerse daño, abandono total o despersonalización severa, responde con profundísima empatía en una o dos frases: valida el dolor y pide de inmediato ayuda humana profesional, mencionando las líneas 024 (España), 800 911 2000 (México), 135 (Argentina), 106 (Colombia), *4141 (Chile) o 988. La tarjeta con los números la pinta el programa aparte; tú solo habla con calma.
+== CRISIS ==
+No eres médica ni terapeuta: eres contención. Ante ideación de hacerte daño, abandono total o despersonalización severa: empatía profunda en una o dos frases, validando el dolor, y derivación inmediata a ayuda humana profesional mencionando las líneas 024 (España), 800 911 2000 (México), 135 (Argentina), 106 (Colombia), *4141 (Chile) o 988. La tarjeta con los números la pinta el programa aparte; tú solo habla con calma.
 
-== 10. BOTONES DE DESCARGA ==
-A veces llega de golpe un mensaje largo y cargado: viene de un botón de descarga (rabia con la familia, culpa por querer que todo termine, sentirse invisible, hartazgo de frases hechas). Con ese tipo de mensaje:
-- Valida primero en una o dos frases, agarrándote de algo CONCRETO que el texto diga. Nada de validación genérica.
-- Después da UNA micro-acción de cuerpo: física, de menos de dos minutos, posible ahora mismo (en un pasillo, en la cocina, en el carro). Repertorio: soltar la mandíbula y dejar caer los hombros contando tres segundos; empujar el suelo con los pies descalzos; agua fría en muñecas o nuca; apretar los puños cinco segundos y soltar; nombrar en voz baja cinco cosas que ves a tu alrededor; un vaso de agua despacio, en tragos largos.
-- Prohibido como micro-acción: respirar hondo, respiración profunda o 4-4-6, meditar, "un momento de calma", "tomate un tiempo para ti". Ya está quemado y suena a enfermera de turno.
-- Cuéntala como la contaría una persona: "Haz una cosa: aprieta los puños cinco segundos y suéltalos." Sin listas, sin pasos numerados.
-- Máximo cinco frases en total.`;
+== BOTONES DE DESCARGA ==
+Si llega de golpe un mensaje largo y cargado (de un botón: rabia con la familia, culpa por querer que termine, sentirse invisible, hartazgo de frases hechas): valida primero en una o dos frases agarrándote de algo CONCRETO del texto, y después da UNA micro-acción de cuerpo: física, de menos de dos minutos, posible ahora mismo (pasillo, cocina, carro). Repertorio: soltar la mandíbula y dejar caer los hombros contando tres segundos; empujar el suelo con los pies descalzos; agua fría en muñecas o nuca; apretar los puños cinco segundos y soltar; nombrar en voz baja cinco cosas que ves; un vaso de agua despacio, en tragos largos. Prohibido como micro-acción: respirar hondo, respiración profunda o 4-4-6, meditar, "un momento de calma", "tomate un tiempo para ti". Cuéntala como la contaría una persona ("Haz una cosa: aprieta los puños cinco segundos y suéltalos."), sin listas ni pasos numerados. Máximo cinco frases en total.`;
 
       const propios = historial.filter(m => m.role === 'model').slice(-3);
       if (propios.length === 0) return base;
@@ -1884,6 +1888,104 @@ ${lista}`;
       if (e.key === 'Escape') cerrarModales();
     });
 
+    // ============ CUOTA DIARIA Y FALLBACK LOCAL ============
+    // Salvavidas de costo: cuota por usuario + respuestas de reserva cuando
+    // la API falla o no hay red. La app nunca "muere" ni gasta de más.
+    const CLAVE_USO = 'almaUso';
+    const CUOTA_DIARIA = 20; // mensajes de chat por día por dispositivo
+
+    function conteoHoy() {
+      try {
+        const u = JSON.parse(localStorage.getItem(CLAVE_USO) || '{}');
+        return u.fecha === fechaClave(new Date()) ? (u.n || 0) : 0;
+      } catch (e) { return 0; }
+    }
+    function registrarUso() {
+      try {
+        localStorage.setItem(CLAVE_USO, JSON.stringify({ fecha: fechaClave(new Date()), n: conteoHoy() + 1 }));
+      } catch (e) {}
+    }
+
+    // Respuestas locales en la voz de Alma: dignas, cortas, sin fingir que son IA.
+    const RESPUESTAS_RESERVA = [
+      'Estoy aquí, aunque ahora mismo no llego con todo. Lo que contaste no se me pierde: retomémoslo en un rato.',
+      'Suena a carga de verdad. Por ahora esto es lo que tengo: no estás exagerando y no estás sola en esto.',
+      'Ahora mismo no logro responder como quiero. Tomé lo que dijiste. Vuelve a intentarlo en un rato y seguimos.',
+      'Escuché lo esencial: estás al límite. Mientras vuelvo, una pausa de un minuto te puede ayudar: está en Más herramientas.'
+    ];
+
+    function respuestaReserva() {
+      removeTypingIndicator();
+      const vivo = document.getElementById('streaming-message');
+      if (vivo) vivo.remove();
+      const resp = RESPUESTAS_RESERVA[Math.floor(Math.random() * RESPUESTAS_RESERVA.length)];
+      historial.push({ role: 'model', text: resp });
+      guardarHistorial();
+      addMessage(resp, false);
+      setStatus('Sin conexión con la IA: te respondí de reserva. Reintenta en un rato.', true);
+    }
+
+    // ============ BITÁCORA DE DESAHOGO ============
+    // Costo $0: todo vive en localStorage. Soltar borra al instante (ritual);
+    // guardar deja la nota en este dispositivo, nunca en un servidor.
+    const CLAVE_BITACORA = 'almaBitacora';
+
+    function leerBitacora() {
+      try {
+        const arr = JSON.parse(localStorage.getItem(CLAVE_BITACORA) || '[]');
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) { return []; }
+    }
+    function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+    function abrirBitacora() {
+      abrirModal('modal-bitacora');
+      pintarBitacora();
+    }
+
+    function pintarBitacora(aviso) {
+      const notas = leerBitacora();
+      let html = '<h3>Bitácora de desahogo</h3>';
+      html += '<p class="modal-sub">Escribe sin filtros lo que llevas encima. Puedes soltarlo —se borra al instante, es un ritual— o guardarlo aquí, en este dispositivo, para volver a leerlo.</p>';
+      html += '<div class="bitacora-caja"><textarea id="bitacora-texto" placeholder="Escribe lo que sientes en este momento…"></textarea></div>';
+      html += '<div style="display:flex; gap:8px;">';
+      html += '<button class="btn-principal" style="margin-top:0; flex:1;" onclick="soltarBitacora()">Soltar y borrar</button>';
+      html += '<button class="btn-principal" style="margin-top:0; flex:1; background:var(--surface-variant); color:var(--on-surface);" onclick="guardarBitacora()">Guardar aquí</button>';
+      html += '</div>';
+      if (aviso) html += '<p style="font-size:13px; color:var(--primary); margin:10px 0 0;">' + esc(aviso) + '</p>';
+      if (notas.length) {
+        html += '<div style="margin-top:14px;">';
+        notas.slice(-5).reverse().forEach(function (n) {
+          html += '<div class="bitacora-nota"><span>' + esc(n.texto) + '</span><small>' + esc(n.fecha) + '</small></div>';
+        });
+        html += '</div>';
+        html += '<button class="borrar-todo" onclick="borrarBitacora()">Borrar todas las notas guardadas</button>';
+      }
+      document.getElementById('bitacora-body').innerHTML = html;
+    }
+
+    function soltarBitacora() {
+      const campo = document.getElementById('bitacora-texto');
+      if (!campo || !campo.value.trim()) return;
+      campo.value = '';
+      pintarBitacora('Soltado. Que siga volando.');
+    }
+
+    function guardarBitacora() {
+      const campo = document.getElementById('bitacora-texto');
+      const texto = campo && campo.value.trim();
+      if (!texto) return;
+      const notas = leerBitacora();
+      notas.push({ fecha: fechaClave(new Date()), texto: texto });
+      try { localStorage.setItem(CLAVE_BITACORA, JSON.stringify(notas.slice(-50))); } catch (e) {}
+      pintarBitacora('Guardada en este dispositivo. Solo tú la puedes leer.');
+    }
+
+    function borrarBitacora() {
+      try { localStorage.removeItem(CLAVE_BITACORA); } catch (e) {}
+      pintarBitacora('Notas borradas.');
+    }
+
     // ============ CHEQUEO EMOCIONAL DIARIO ============
     const CLAVE_CHECKINS = 'almaCheckins';
     const ETIQUETAS_ANIMO = { 1: 'En el suelo', 2: 'Muy mal', 3: 'Regular', 4: 'Bien', 5: 'Bastante bien' };
@@ -2016,7 +2118,7 @@ ${lista}`;
       if (!ej) return;
 
       let html = '<h3>' + ej.titulo + '</h3>';
-      html += '<div class="micro-phase"><div class="fase" id="micro-fase">Prepárate</div><div class="segundos" id="micro-segundos">' + ej.duracion + '</div></div>';
+      html += '<div class="micro-phase"><div class="breath-circle" id="micro-circulo">Prepárate</div><div class="fase" id="micro-fase">&nbsp;</div><div class="segundos" id="micro-segundos">' + ej.duracion + '</div></div>';
       html += '<ul class="micro-steps">' + ej.pasos.map(function (p) { return '<li>' + p + '</li>'; }).join('') + '</ul>';
       html += '<button class="btn-principal" onclick="pintarMicroLista()">Terminar</button>';
       document.getElementById('micro-body').innerHTML = html;
@@ -2032,8 +2134,15 @@ ${lista}`;
       let restanteFase = fases[0].seg;
       const elFase = document.getElementById('micro-fase');
       const elSeg = document.getElementById('micro-segundos');
+      const elCirculo = document.getElementById('micro-circulo');
       elFase.textContent = fases[0].nombre;
       elSeg.textContent = restanteFase;
+      // Circulo de respiracion: crece al inhalar, se sostiene y baja al exhalar.
+      if (elCirculo) {
+        elCirculo.style.transitionDuration = fases[0].seg + 's';
+        elCirculo.textContent = fases[0].nombre;
+        elCirculo.classList.add('grande');
+      }
 
       microTimer = setInterval(function () {
         restanteTotal--;
@@ -2041,6 +2150,7 @@ ${lista}`;
         if (!document.getElementById('micro-fase')) { detenerMicro(); return; }
         if (restanteTotal <= 0) {
           detenerMicro();
+          if (elCirculo) { elCirculo.classList.remove('grande'); elCirculo.textContent = 'Listo'; }
           document.getElementById('micro-body').innerHTML =
             '<h3>' + ej.titulo + '</h3>' +
             '<div class="micro-phase"><div class="fase">Listo.</div></div>' +
@@ -2052,6 +2162,12 @@ ${lista}`;
           indice = (indice + 1) % fases.length;
           restanteFase = fases[indice].seg;
           elFase.textContent = fases[indice].nombre;
+          if (elCirculo) {
+            elCirculo.style.transitionDuration = fases[indice].seg + 's';
+            elCirculo.textContent = fases[indice].nombre;
+            if (fases[indice].nombre === 'Inhala') elCirculo.classList.add('grande');
+            if (fases[indice].nombre === 'Exhala') elCirculo.classList.remove('grande');
+          }
         }
         elSeg.textContent = restanteFase;
       }, 1000);
@@ -2191,6 +2307,7 @@ ${lista}`;
       const filas = [
         { icono: '📈', texto: 'Mi semana: chequeo emocional', accion: "abrirCheckin()" },
         { icono: '🕐', texto: 'Tengo 2 minutos: micro-regulación', accion: "abrirMicro()" },
+        { icono: '📝', texto: 'Bitácora: escribir y soltar', accion: "abrirBitacora()" },
         { icono: '💬', texto: '¿Qué digo yo? Frases para los demás', accion: "abrirFrases()" }
       ];
       let html = '';

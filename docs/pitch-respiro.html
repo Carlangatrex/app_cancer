@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Respiro · One-Pager para Alianzas Institucionales</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --morado: #6750a4; --morado-osc: #4a3a78; --morado-suave: #d0c4e7;
+    --verde: #2e7d32; --verde-suave: #c8e6c9; --tinta: #1a1a1a; --gris: #555;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: 'Inter', sans-serif; color: var(--tinta); background: #ececf1;
+    line-height: 1.45; font-size: 9.5pt;
+  }
+  .hoja {
+    width: 210mm; min-height: 297mm; margin: 10px auto; background: #fff;
+    padding: 0 0 10mm; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    display: flex; flex-direction: column;
+  }
+  @media print {
+    body { background: #fff; }
+    .hoja { margin: 0; box-shadow: none; width: auto; }
+    @page { size: A4; margin: 0; }
+  }
+
+  /* Cabecera */
+  .cabecera {
+    background: linear-gradient(135deg, var(--morado) 0%, var(--morado-osc) 100%);
+    color: #fff; padding: 9mm 12mm 7mm; border-radius: 0 0 6mm 0;
+  }
+  .marca { display: flex; align-items: center; gap: 10px; }
+  .logo {
+    width: 11mm; height: 11mm; border-radius: 50%; background: #fff; color: var(--morado);
+    display: flex; align-items: center; justify-content: center; font-size: 14pt; font-weight: 800;
+    flex: none;
+  }
+  .cabecera h1 { font-size: 17pt; font-weight: 800; letter-spacing: 0.5px; }
+  .cabecera .tag { font-size: 9.5pt; font-weight: 300; opacity: 0.95; margin-top: 2mm; max-width: 165mm; }
+  .cabecera .etiquetas { margin-top: 3mm; font-size: 7.5pt; }
+  .cabecera .etiquetas span {
+    background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 10px; padding: 1px 8px; margin-right: 6px; display: inline-block;
+  }
+
+  /* Contenido a dos columnas */
+  .cuerpo { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; padding: 6mm 12mm 0; }
+  .bloque h2 {
+    font-size: 10.5pt; color: var(--morado); text-transform: uppercase; letter-spacing: 0.6px;
+    border-bottom: 2px solid var(--morado-suave); padding-bottom: 1.5mm; margin-bottom: 2.5mm;
+  }
+  .bloque p { margin-bottom: 2mm; }
+  .bloque ul { padding-left: 4.5mm; margin-bottom: 2mm; }
+  .bloque li { margin-bottom: 1.6mm; }
+  .bloque b { font-weight: 700; }
+  .verde { color: var(--verde); font-weight: 700; }
+
+  .dato {
+    background: #f6f4fb; border-left: 3px solid var(--morado); border-radius: 0 8px 8px 0;
+    padding: 2mm 3mm; margin-bottom: 2mm; font-size: 9pt;
+  }
+  .dato b { font-size: 12pt; color: var(--morado); }
+
+  /* Piloto */
+  .pasos { counter-reset: paso; padding-left: 0; list-style: none; }
+  .pasos li { position: relative; padding-left: 7mm; margin-bottom: 1.8mm; }
+  .pasos li::before {
+    counter-increment: paso; content: counter(paso);
+    position: absolute; left: 0; top: 0.4mm; width: 4.8mm; height: 4.8mm; border-radius: 50%;
+    background: var(--verde); color: #fff; font-size: 7.5pt; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Banda inferior */
+  .pie {
+    margin: 6mm 12mm 0; background: var(--verde-suave); border-radius: 4mm;
+    padding: 4mm 6mm; display: flex; justify-content: space-between; align-items: center; gap: 6mm;
+  }
+  .pie .titulo { font-size: 10pt; font-weight: 700; color: var(--verde); }
+  .pie .datos { font-size: 8.5pt; text-align: right; }
+  .fuentes { padding: 3mm 12mm 0; font-size: 6.8pt; color: var(--gris); }
+  .fuentes b { color: var(--tinta); }
+</style>
+</head>
+<body>
+<div class="hoja">
+
+  <header class="cabecera">
+    <div class="marca">
+      <div class="logo">R</div>
+      <h1>RESPIRO</h1>
+    </div>
+    <p class="tag">Tecnología de acompañamiento emocional 24/7 para el cuidador primario de pacientes con cáncer.</p>
+    <p class="etiquetas">
+      <span>Gratis para el cuidador</span><span>Sin registro ni descargas</span><span>Datos locales, Ley 1581</span><span>Protocolo de crisis integrado</span>
+    </p>
+  </header>
+
+  <div class="cuerpo">
+
+    <div class="bloque">
+      <h2>1 · El problema invisible</h2>
+      <p>Las instituciones de salud acompañan al paciente; la familia que sostiene el tratamiento —el cuidador primario— queda sola. Cuando el cuidador colapsa, el tratamiento se compromete: aparecen urgencias, llamadas de pánico y hospitalizaciones evitables.</p>
+      <div class="dato"><b>58,3%</b> de los cuidadores de pacientes oncológicos en cuidados paliativos presenta sobrecarga según la escala de Zarit (34% de ellos, sobrecarga intensa).</div>
+      <ul>
+        <li><b>Sobrecarga documentada en la región:</b> 58,8% en Chile (37,5% intensa), 35,1% en Colombia y 33,7% en México en estudios recientes.</li>
+        <li><b>Impacto laboral:</b> 69% de los cuidadores de pacientes con cáncer avanzado reporta repercusión negativa en su trabajo.</li>
+        <li><b>Sin cobertura operativa:</b> ningún equipo humano puede ofrecer contención continua, y los grupos de apoyo no cubren la madrugada ni la sala de espera.</li>
+      </ul>
+
+      <h2 style="margin-top:4mm;">2 · La solución: Respiro</h2>
+      <p>Aplicación web progresiva (PWA) de acompañamiento conversacional, diseñada específicamente para el cuidador primario —no para el paciente—.</p>
+      <ul>
+        <li><b>Contención sin juicios, 24/7:</b> espacio de desahogo verbal y escrito para emociones tabú (rabia, culpa, deseo de huir, invisibilidad), con tono de par que escucha, calibrado contra clichés y lenguaje de manual.</li>
+        <li><b>Micro-regulación en 60 segundos:</b> ejercicios corporales guiados para la silla del hospital, el auto o la madrugada.</li>
+        <li><b>Protocolo de crisis (SOS):</b> detección inmediata de ideación suicida o colapso, con despliegue automático de líneas de atención humana gratuita por país. Nunca sustituye la atención profesional y así se declara al usuario.</li>
+      </ul>
+    </div>
+
+    <div class="bloque">
+      <h2>3 · Por qué las instituciones eligen Respiro</h2>
+      <ul>
+        <li><b>Privacidad por diseño (Ley 1581 / RGPD):</b> sin registro de usuarios; el historial vive únicamente en el dispositivo del cuidador. No hay bases de datos de conversaciones ni contenido que proteger.</li>
+        <li><b>Multiplicador de alcance:</b> permite ofrecer soporte continuo a cientos de familias sin saturar a los psicólogos ni al personal de trabajo social, que quedan para los casos que sí requieren intervención humana.</li>
+        <li><b>Implementación inmediata:</b> funciona desde el navegador del celular. El cuidador entra por un enlace y habla; sin tiendas, sin claves, sin capacitación.</li>
+        <li><b>Canal de difusión natural:</b> se comparte por WhatsApp y se abre en el navegador; ideal para grupos de apoyo y programas de acompañamiento ya existentes.</li>
+      </ul>
+
+      <h2 style="margin-top:4mm;">4 · Piloto de impacto: 90 días</h2>
+      <ul class="pasos">
+        <li><b>Personalización co-branding:</b> la experiencia lleva el nombre y el logo de su institución; ustedes la presentan como suya.</li>
+        <li><b>Grupo cerrado de 50 a 500 cuidadores</b> con enlace directo de acceso y guía de difusión para su equipo y redes de apoyo.</li>
+        <li><b>Medición antes/después:</b> aplicación anónima de la escala de Zarit al inicio y al cierre, más indicadores de participación del grupo, en un <b>Informe de Impacto</b> entregado al finalizar. Sin datos individuales ni contenido de conversaciones.</li>
+        <li><b>Costo del piloto:</b> cubrimos la plataforma; la institución aporta la difusión y la aplicación de las encuestas. Al cierre, definimos juntos el modelo de licenciamiento.</li>
+      </ul>
+
+      <h2 style="margin-top:4mm;">5 · Respaldo técnico y ético</h2>
+      <ul>
+        <li><b>Arquitectura de cero exposición:</b> infraestructura en Cloudflare Workers; las credenciales de IA viven solo en el servidor y el tráfico va cifrado de extremo a extremo.</li>
+        <li><b>Reglas humanizadas y verificables:</b> el modelo opera bajo instrucciones estrictas de no-sustitución médica, filtro de clichés y derivación a líneas humanas en crisis.</li>
+        <li><b>Política de privacidad publicada</b> y accesible desde la propia aplicación.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="pie">
+    <div>
+      <div class="titulo">Conversemos un piloto para su comunidad</div>
+      <div style="font-size:8.5pt;">50 cuidadores · 90 días · medición con escala validada (Zarit)</div>
+    </div>
+    <div class="datos">
+      <b>Respiro</b> — Acompañante virtual del cuidador<br>
+      carlangatrex@gmail.com · respiro.carlangatrex.workers.dev
+    </div>
+  </div>
+
+  <p class="fuentes"><b>Fuentes:</b> Estrella Hurtado et al. (2025), sobrecarga en cuidadores oncológicos de cuidados paliativos, escala de Zarit, n=127, Perú · Toffoletto y Reynaldos-Grandón (2019), Chile · Hernández et al. (2024), Colombia · Soriano-Usúa et al. (2022), México · National Cancer Institute (PDQ®, Cuidadores informales de pacientes con cáncer). Documento comercial: Respiro no ofrece servicios clínicos ni reemplaza la atención profesional en salud.</p>
+
+</div>
+</body>
+</html>
