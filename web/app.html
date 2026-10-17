@@ -334,15 +334,6 @@
         </button>
       </div>
 
-      <!-- Prompts rápidos -->
-      <div class="quick-prompts" id="quick-prompts">
-        <div class="quick-prompt" onclick="sendPrompt('rabia')">Rabia con mi familia</div>
-        <div class="quick-prompt" onclick="sendPrompt('culpa')">Culpa por querer que esto termine</div>
-        <div class="quick-prompt" onclick="sendPrompt('invisible')">Nadie pregunta cómo estoy yo</div>
-        <div class="quick-prompt" onclick="sendPrompt('agotado')">Estoy agotado/a</div>
-      </div>
-      <p class="quick-hint">¿No es ninguna de estas? Escríbelo con tus palabras: aquí no hay lista cerrada de sentimientos.</p>
-
       <div class="status" id="status"></div>
     </div>
   </div>
@@ -384,10 +375,9 @@
       "culpa": {
         articulo: "la",
         keywords: ["culpa", "culpab", "culpar", "culpable", "remordimiento", "arrepent", "egoista", "egoismo", "mal cuidador", "mala cuidadora", "mal padre", "mala madre", "deberia haber", "no hice lo suficiente", "no es suficiente"],
-        text: "Sentir culpa por querer un descanso o por desear que la situación cambie es una respuesta humana natural. El agotamiento no borra el amor que sientes por tu familiar.",
+        text: "Sentir culpa por querer un descanso o por desear que la situación cambie es una respuesta humana natural; el agotamiento no borra el amor que sientes por tu familiar.\n\n¿Qué es lo que más te pesa de esa culpa hoy?",
         author: "Dra. Elena Gómez — Psicooncóloga",
         quote: "'El autocuidado del cuidador no es un lujo ni un acto egoísta; es una parte indispensable del esquema de salud del paciente.'",
-        options: ["¿Cómo manejo el cansancio?", "Probar ejercicio de respiración", "Escribir un desahogo"],
         cierre: {
           mensaje: "Antes de cerrar, un ejercicio sencillo: escribe lo que le dirías a un amigo que se sintiera como tú. Leerlo ayuda a soltar la culpa.",
           actividad: "desahogo",
@@ -397,10 +387,9 @@
       "cansancio": {
         articulo: "el",
         keywords: ["agotad", "agotamiento", "cansad", "cansan", "cansancio", "sueno", "dormir", "duermo", "insomnio", "fatiga", "extenuad", "desvelad", "sin energia", "sin fuerza", "no puedo mas", "exhaust", "rendid", "desgan"],
-        text: "Llevar semanas o meses sin un sueño reparador afecta directamente tu sistema nervioso. Es esperable que sientas poca paciencia o la mente nublada.",
+        text: "Llevar semanas o meses sin un sueño reparador afecta directamente tu sistema nervioso; es esperable que sientas poca paciencia o la mente nublada.\n\n¿Cuándo fue la última vez que pudiste descansar de verdad?",
         author: "Dr. Marco Silva — Especialista en Medicina del Sueño",
         quote: "'Cuando no puedes pausar el entorno, debes forzar micro-pausas somáticas de 2 minutos durante el día.'",
-        options: ["Probar ejercicio de respiración", "Siento culpa", "Líneas de ayuda SOS"],
         cierre: {
           mensaje: "Ya hicimos un buen recorrido. Tu cuerpo también necesita un respiro, así que cerremos con una pausa de un minuto.",
           actividad: "respiracion",
@@ -410,10 +399,9 @@
       "rabia": {
         articulo: "la",
         keywords: ["rabia", "rabiet", "frustra", "enojad", "enojo", "furia", "furios", "bronca", "impacien", "irritab", "hart", "molest", "molesto", "molesta", "molestia", "cabread", "indigna", "ira"],
-        text: "La frustración con los trámites, los médicos o la situación es válida. Reaccionar con rabia no te convierte en una mala persona, indica que sobrepasaste tu límite.",
+        text: "La frustración con los trámites, los médicos o la situación es válida; reaccionar con rabia no te convierte en una mala persona, indica que sobrepasaste tu límite.\n\n¿Contra qué o contra quién sientes esa rabia ahora mismo?",
         author: "Lic. Claudia Morales — Terapeuta Familiar",
         quote: "'No reprimas la emoción. Reconócela en silencio: estoy sintiendo rabia porque estoy agotado.'",
-        options: ["Escribir un desahogo", "Probar ejercicio de respiración", "Volver al inicio"],
         cierre: {
           mensaje: "Llevas razón en sentir lo que sientes. Antes de cerrar, soltemos por escrito un poco de esa carga.",
           actividad: "desahogo",
@@ -423,10 +411,9 @@
       "soledad": {
         articulo: "la",
         keywords: ["soledad", "solitari", "invisible", "nadie pregunta", "nadie me pregunta", "nadie me ve", "nadie me escucha", "abandonad", "ignorad", "apartad", "no me ven", "no cuentan conmigo", "me siento solo", "me siento sola", "estoy solo", "estoy sola"],
-        text: "Es agotador sostener todo mientras sientes que a nadie le importa cómo estás tú. Que el foco esté puesto en el paciente no significa que tú no importes ni que lo que sientes sea invisible.",
+        text: "Es agotador sostener todo mientras sientes que a nadie le importa cómo estás tú; que el foco esté puesto en el paciente no significa que tú no importes.\n\n¿En qué momento del día te sientes más solo o sola?",
         author: "Lic. Claudia Morales — Terapeuta Familiar",
         quote: "'También eres parte de la historia, no solo el soporte. Tu cansancio y tu dolor merecen un lugar.'",
-        options: ["Escribir un desahogo", "Probar ejercicio de respiración", "Siento culpa"],
         cierre: {
           mensaje: "Gracias por confiarme esto. Antes de irnos, pon en palabras lo que hoy necesitas y de quién te gustaría recibirlo.",
           actividad: "desahogo",
@@ -436,10 +423,9 @@
       "tristeza": {
         articulo: "la",
         keywords: ["triste", "tristeza", "desanimo", "llorar", "lloro", "llanto", "vacio", "desesperanz", "sin animo", "apagad", "melancol", "deprimid", "depresion", "desmotivad", "no le veo sentido"],
-        text: "La tristeza y el desgaste emocional aparecen cuando sostienes mucho durante demasiado tiempo. No es debilidad: es la señal de que llevas una carga real. Permitirte sentirla, sin forzarte, también es cuidarte.",
+        text: "La tristeza y el desgaste emocional aparecen cuando sostienes mucho durante demasiado tiempo; no es debilidad, es la señal de que llevas una carga real.\n\n¿Qué es lo que más te entristece en este momento?",
         author: "Dra. Elena Gómez — Psicooncóloga",
         quote: "'Las emociones que no se nombran se acumulan; ponerles nombre es el primer paso para que bajen de intensidad.'",
-        options: ["Probar ejercicio de respiración", "Escribir un desahogo", "Líneas de ayuda SOS"],
         cierre: {
           mensaje: "Has sostenido mucho hoy. Terminemos con una pausa amable para tu cuerpo.",
           actividad: "respiracion",
@@ -449,10 +435,9 @@
       "miedo": {
         articulo: "el",
         keywords: ["miedo", "temeros", "ansiedad", "ansios", "angustia", "angustiad", "panico", "nervios", "preocupad", "preocupacion", "incertidumbre", "insegur", "no se que pasara", "no se que va a pasar", "futuro", "asusta"],
-        text: "La incertidumbre sobre lo que vendrá —resultados, tratamientos, el futuro— es una de las cargas más difíciles de sostener. Sentir miedo no significa que no puedas: significa que algo te importa mucho.",
+        text: "La incertidumbre sobre lo que vendrá —resultados, tratamientos, el futuro— es una de las cargas más difíciles de sostener; sentir miedo significa que algo te importa mucho.\n\n¿Qué es lo que más te preocupa del futuro ahora mismo?",
         author: "Dra. Elena Gómez — Psicooncóloga",
         quote: "'La ansiedad vive en el futuro. Volver al momento presente, aunque sea por un minuto, le devuelve el timón a tu cuerpo.'",
-        options: ["Probar ejercicio de respiración", "Escribir un desahogo", "Siento culpa"],
         cierre: {
           mensaje: "Ya diste un paso importante al ponerle nombre al miedo. Cerremos volviendo al momento presente.",
           actividad: "respiracion",
@@ -499,8 +484,8 @@
       return div;
     }
 
-    // Respuesta del acompañante: texto + cita opcional + botones-opción.
-    function appendBotMessage(text, options, extra) {
+    // Respuesta del acompañante: texto + cita opcional (sin botones: es conversación).
+    function appendBotMessage(text, extra) {
       const div = document.createElement('div');
       div.className = 'message model';
 
@@ -518,20 +503,6 @@
           cita.appendChild(cite);
         }
         div.appendChild(cita);
-      }
-
-      if (Array.isArray(options) && options.length) {
-        const cont = document.createElement('div');
-        cont.className = 'opciones';
-        options.forEach(function (opt) {
-          const b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'opcion-btn';
-          b.textContent = opt;
-          b.addEventListener('click', function () { handleOption(opt); });
-          cont.appendChild(b);
-        });
-        div.appendChild(cont);
       }
 
       messagesDiv.appendChild(div);
@@ -621,7 +592,7 @@
       } else {
         datos = (tema && knowledgeBase[tema] && knowledgeBase[tema].cierre) ? knowledgeBase[tema].cierre : CIERRE_DEFAULT;
       }
-      appendBotMessage(datos.mensaje, ["Seguir conversando", "Volver al inicio"]);
+      appendBotMessage(datos.mensaje);
       if (datos.actividad === "desahogo") renderNoteExercise(datos.actividadTexto);
       else if (datos.actividad === "respiracion") renderBreathingExercise(datos.actividadTexto);
       contadorInteracciones = 0;
@@ -641,7 +612,7 @@
       if (tieneAlguno(norm, tokens, ["reiniciar", "reinicia", "borrar conversacion", "nueva conversacion", "empezar de nuevo"])) { nuevaConversacion(); return; }
       if (tieneAlguno(norm, tokens, ["volver al inicio", "volver inicio", "volver al menu"])) { volverInicio(); return; }
       if (tieneAlguno(norm, tokens, ["seguir conversando", "seguimos conversando", "continuemos"])) {
-        appendBotMessage("Aquí sigo contigo. Cuéntame qué más necesitas poner en palabras hoy.", ["Estoy triste", "Tengo miedo o ansiedad", "Me siento agotado/a"]);
+        appendBotMessage("Aquí sigo contigo. Cuéntame qué más necesitas poner en palabras hoy.");
         return;
       }
 
@@ -651,32 +622,19 @@
 
       if (tema) {
         if (temasVistos.has(tema)) {
-          const articulo = knowledgeBase[tema].articulo || 'el';
-          appendBotMessage(
-            "Ya revisamos una pauta sobre " + articulo + " " + tema + ". Para no dar vueltas sobre lo mismo, ¿te gustaría hacer un ejercicio práctico de regulación o escribir lo que sientes?",
-            esUltima ? [] : ["Probar ejercicio de respiración", "Escribir un desahogo", "Líneas de ayuda SOS"]
-          );
+          appendBotMessage("Ya hablamos un poco de esto antes. ¿Qué es lo que más te pesa de nuevo ahora?");
         } else {
           temasVistos.add(tema);
           const data = knowledgeBase[tema];
-          appendBotMessage(data.text, esUltima ? [] : data.options, { quote: data.quote, author: data.author });
+          appendBotMessage(data.text, { quote: data.quote, author: data.author });
         }
       } else {
-        // Fallback empático: nunca expone que "no entiende" las palabras
-        appendBotMessage(
-          "Gracias por confiarme esto. No necesitas decirlo de una forma exacta: lo que sientes tiene sentido, incluso cuando cuesta ponerle nombre.\n\n¿Qué se parece más a lo que traes hoy?",
-          esUltima ? [] : ["Me siento agotado/a", "Siento culpa", "Siento rabia o frustración", "Estoy triste", "Tengo miedo o ansiedad"]
-        );
+        // Fallback empático, sin opciones: refleja y pregunta.
+        appendBotMessage("Gracias por confiármelo. No necesitas decirlo de una forma exacta ni ponerle nombre: lo que sientes tiene sentido.\n\n¿Qué es lo que más te pesa hoy?");
       }
 
       // El 5.º intercambio se responde normal y LUEGO se cierra con mensaje + actividad
       if (esUltima) cerrarCiclo(false, tema || ultimoTema);
-    }
-
-    // Botones-opción: se pintan como mensaje del usuario y se resuelven.
-    function handleOption(opt) {
-      appendUserMessage(opt);
-      processInput(opt);
     }
 
     // ---------- Herramientas dentro del chat ----------
@@ -759,7 +717,7 @@
       if (btn) btn.addEventListener('click', function () {
         if (ta && ta.value.trim()) {
           ta.value = '';
-          appendBotMessage("Soltado. Que siga volando.", ["Probar ejercicio de respiración", "Volver al inicio"]);
+          appendBotMessage("Soltado. Que siga volando.");
         } else if (ta) {
           ta.focus();
         }
@@ -822,19 +780,6 @@
       processInput(text);
     }
 
-    function sendPrompt(type) {
-      const promptMap = {
-        'rabia': 'Siento rabia',
-        'culpa': 'Siento culpa',
-        'invisible': 'Me siento invisible: todos preguntan por el paciente y nadie pregunta cómo estoy yo',
-        'agotado': 'Estoy agotado/a'
-      };
-      const t = promptMap[type];
-      if (!t) return;
-      appendUserMessage(t);
-      processInput(t);
-    }
-
     // ---------- Onboarding y nombre ----------
     function volverInicio() {
       if (window.speechSynthesis) speechSynthesis.cancel();
@@ -858,7 +803,6 @@
       companionTitle.textContent = companionName;
 
       if (!restaurarChat()) addWelcomeMessage();
-      actualizarPrompts();
       userInput.focus();
     }
 
@@ -917,14 +861,6 @@
       return true;
     }
 
-    function actualizarPrompts() {
-      const visible = historial.length === 0;
-      const qp = document.getElementById('quick-prompts');
-      const hint = document.querySelector('.quick-hint');
-      if (qp) qp.classList.toggle('oculto', !visible);
-      if (hint) hint.classList.toggle('oculto', !visible);
-    }
-
     function nuevaConversacion() {
       detenerGrabacion();
       detenerRespiracion();
@@ -935,7 +871,6 @@
       try { localStorage.removeItem(CLAVE_HISTORIAL); } catch (e) {}
       messagesDiv.innerHTML = '';
       addWelcomeMessage();
-      actualizarPrompts();
       userInput.value = '';
       ajustarAltura();
       userInput.focus();
@@ -1203,7 +1138,6 @@
       chatArea.style.display = 'block';
       companionTitle.textContent = companionName;
       if (!restaurarChat()) addWelcomeMessage();
-      actualizarPrompts();
     }
   </script>
 
