@@ -382,22 +382,52 @@
     // ---------- Base de conocimiento local (cero costo de API) ----------
     const knowledgeBase = {
       "culpa": {
+        articulo: "la",
+        keywords: ["culpa", "culpab", "culpar", "culpable", "remordimiento", "arrepent", "egoista", "egoismo", "mal cuidador", "mala cuidadora", "mal padre", "mala madre", "deberia haber", "no hice lo suficiente", "no es suficiente"],
         text: "Sentir culpa por querer un descanso o por desear que la situación cambie es una respuesta humana natural. El agotamiento no borra el amor que sientes por tu familiar.",
         author: "Dra. Elena Gómez — Psicooncóloga",
         quote: "'El autocuidado del cuidador no es un lujo ni un acto egoísta; es una parte indispensable del esquema de salud del paciente.'",
         options: ["¿Cómo manejo el cansancio?", "Probar ejercicio de respiración", "Escribir un desahogo"]
       },
       "cansancio": {
+        articulo: "el",
+        keywords: ["agotad", "agotamiento", "cansad", "cansan", "cansancio", "sueno", "dormir", "duermo", "insomnio", "fatiga", "extenuad", "desvelad", "sin energia", "sin fuerza", "no puedo mas", "exhaust", "rendid", "desgan"],
         text: "Llevar semanas o meses sin un sueño reparador afecta directamente tu sistema nervioso. Es esperable que sientas poca paciencia o la mente nublada.",
         author: "Dr. Marco Silva — Especialista en Medicina del Sueño",
         quote: "'Cuando no puedes pausar el entorno, debes forzar micro-pausas somáticas de 2 minutos durante el día.'",
         options: ["Probar ejercicio de respiración", "Siento culpa", "Líneas de ayuda SOS"]
       },
       "rabia": {
+        articulo: "la",
+        keywords: ["rabia", "rabiet", "frustra", "enojad", "enojo", "furia", "furios", "bronca", "impacien", "irritab", "hart", "molest", "molesto", "molesta", "molestia", "cabread", "indigna", "ira"],
         text: "La frustración con los trámites, los médicos o la situación es válida. Reaccionar con rabia no te convierte en una mala persona, indica que sobrepasaste tu límite.",
         author: "Lic. Claudia Morales — Terapeuta Familiar",
         quote: "'No reprimas la emoción. Reconócela en silencio: estoy sintiendo rabia porque estoy agotado.'",
         options: ["Escribir un desahogo", "Probar ejercicio de respiración", "Volver al inicio"]
+      },
+      "soledad": {
+        articulo: "la",
+        keywords: ["soledad", "solitari", "invisible", "nadie pregunta", "nadie me pregunta", "nadie me ve", "nadie me escucha", "abandonad", "ignorad", "apartad", "no me ven", "no cuentan conmigo", "me siento solo", "me siento sola", "estoy solo", "estoy sola"],
+        text: "Es agotador sostener todo mientras sientes que a nadie le importa cómo estás tú. Que el foco esté puesto en el paciente no significa que tú no importes ni que lo que sientes sea invisible.",
+        author: "Lic. Claudia Morales — Terapeuta Familiar",
+        quote: "'También eres parte de la historia, no solo el soporte. Tu cansancio y tu dolor merecen un lugar.'",
+        options: ["Escribir un desahogo", "Probar ejercicio de respiración", "Siento culpa"]
+      },
+      "tristeza": {
+        articulo: "la",
+        keywords: ["triste", "tristeza", "desanimo", "llorar", "lloro", "llanto", "vacio", "desesperanz", "sin animo", "apagad", "melancol", "deprimid", "depresion", "desmotivad", "no le veo sentido"],
+        text: "La tristeza y el desgaste emocional aparecen cuando sostienes mucho durante demasiado tiempo. No es debilidad: es la señal de que llevas una carga real. Permitirte sentirla, sin forzarte, también es cuidarte.",
+        author: "Dra. Elena Gómez — Psicooncóloga",
+        quote: "'Las emociones que no se nombran se acumulan; ponerles nombre es el primer paso para que bajen de intensidad.'",
+        options: ["Probar ejercicio de respiración", "Escribir un desahogo", "Líneas de ayuda SOS"]
+      },
+      "miedo": {
+        articulo: "el",
+        keywords: ["miedo", "temeros", "ansiedad", "ansios", "angustia", "angustiad", "panico", "nervios", "preocupad", "preocupacion", "incertidumbre", "insegur", "no se que pasara", "no se que va a pasar", "futuro", "asusta"],
+        text: "La incertidumbre sobre lo que vendrá —resultados, tratamientos, el futuro— es una de las cargas más difíciles de sostener. Sentir miedo no significa que no puedas: significa que algo te importa mucho.",
+        author: "Dra. Elena Gómez — Psicooncóloga",
+        quote: "'La ansiedad vive en el futuro. Volver al momento presente, aunque sea por un minuto, le devuelve el timón a tu cuerpo.'",
+        options: ["Probar ejercicio de respiración", "Escribir un desahogo", "Siento culpa"]
       }
     };
 
@@ -488,9 +518,68 @@
       guardarHistorial();
     }
 
+    // ---------- Normalización y coincidencia tolerante a errores ----------
+    function normalizar(s) {
+      return String(s == null ? '' : s)
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function levenshtein(a, b) {
+      const m = a.length, n = b.length;
+      if (m === 0) return n;
+      if (n === 0) return m;
+      let prev = new Array(n + 1);
+      let cur = new Array(n + 1);
+      for (let j = 0; j <= n; j++) prev[j] = j;
+      for (let i = 1; i <= m; i++) {
+        cur[0] = i;
+        for (let j = 1; j <= n; j++) {
+          const cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+          cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+        }
+        const tmp = prev; prev = cur; cur = tmp;
+      }
+      return prev[n];
+    }
+
+    // ¿El texto (normalizado) contiene el término? Tolera raíces (prefijos) y erratas leves.
+    function coincideTermino(norm, tokens, termino) {
+      if (termino.indexOf(' ') !== -1) return norm.indexOf(termino) !== -1;
+      for (let i = 0; i < tokens.length; i++) {
+        const w = tokens[i];
+        if (w === termino) return true;
+        if (termino.length >= 4 && w.indexOf(termino) === 0) return true;
+        if (termino.length >= 4 && w.length >= 4) {
+          const d = levenshtein(w, termino);
+          if (d <= (termino.length >= 8 ? 2 : 1)) return true;
+        }
+      }
+      return false;
+    }
+
+    function tieneAlguno(norm, tokens, lista) {
+      for (let i = 0; i < lista.length; i++) {
+        if (coincideTermino(norm, tokens, lista[i])) return true;
+      }
+      return false;
+    }
+
+    function detectarTema(norm, tokens) {
+      for (const tema in knowledgeBase) {
+        const ks = knowledgeBase[tema].keywords || [];
+        if (tieneAlguno(norm, tokens, ks)) return tema;
+      }
+      return null;
+    }
+
     // ---------- Motor ----------
     function processInput(inputRaw) {
-      const input = String(inputRaw || '').toLowerCase().trim();
+      const norm = normalizar(inputRaw);
+      const tokens = norm.split(' ').filter(Boolean);
       contadorInteracciones++;
 
       // Límite de 5 interacciones para evitar fatiga cognitiva
@@ -507,22 +596,19 @@
         return;
       }
 
-      // Comandos de herramientas
-      if (input.includes("respiraci") || input.includes("respirar")) { renderBreathingExercise(); return; }
-      if (input.includes("desahogo") || input.includes("escribir")) { renderNoteExercise(); return; }
-      if (input.includes("sos") || input.includes("ayuda")) { triggerSOS(); return; }
-      if (input.includes("reiniciar")) { nuevaConversacion(); return; }
-      if (input.includes("volver al inicio")) { volverInicio(); return; }
+      // Comandos de herramientas (se resuelven antes que los temas)
+      if (tieneAlguno(norm, tokens, ["respira"])) { renderBreathingExercise(); return; }
+      if (tieneAlguno(norm, tokens, ["desahog", "escrib", "soltar", "bitacora"])) { renderNoteExercise(); return; }
+      if (tieneAlguno(norm, tokens, ["sos", "crisis", "emergencia", "suicid", "linea de ayuda", "lineas de ayuda"])) { triggerSOS(); return; }
+      if (tieneAlguno(norm, tokens, ["reiniciar", "reinicia", "borrar conversacion", "nueva conversacion", "empezar de nuevo"])) { nuevaConversacion(); return; }
+      if (tieneAlguno(norm, tokens, ["volver al inicio", "volver inicio", "volver al menu"])) { volverInicio(); return; }
 
       // Detección de temas y prevención de repetición
-      let tema = null;
-      if (input.includes("culpa")) tema = "culpa";
-      else if (input.includes("agotad") || input.includes("cansan") || input.includes("sueño")) tema = "cansancio";
-      else if (input.includes("rabia") || input.includes("frustra")) tema = "rabia";
+      const tema = detectarTema(norm, tokens);
 
       if (tema) {
         if (temasVistos.has(tema)) {
-          const articulo = tema === "rabia" ? "la" : "el";
+          const articulo = knowledgeBase[tema].articulo || 'el';
           appendBotMessage(
             "Ya revisamos una pauta sobre " + articulo + " " + tema + ". Para no dar vueltas sobre lo mismo, ¿te gustaría hacer un ejercicio práctico de regulación o escribir lo que sientes?",
             ["Probar ejercicio de respiración", "Escribir un desahogo", "Líneas de ayuda SOS"]
@@ -533,10 +619,10 @@
           appendBotMessage(data.text, data.options, { quote: data.quote, author: data.author });
         }
       } else {
-        // Fallback empático continuo
+        // Fallback empático: nunca expone que "no entiende" las palabras
         appendBotMessage(
-          "Te leo con atención. Aunque no tengo una pauta con esas palabras exactas, entiendo el peso de lo que estás viviendo hoy.\n\n¿Prefieres hacer un minuto de respiración o revisar pautas para el cansancio?",
-          ["Estoy agotado/a", "Siento culpa", "Probar ejercicio de respiración"]
+          "Gracias por confiarme esto. No necesitas decirlo de una forma exacta: lo que sientes tiene sentido, incluso cuando cuesta ponerle nombre.\n\n¿Qué se parece más a lo que traes hoy?",
+          ["Me siento agotado/a", "Siento culpa", "Siento rabia o frustración", "Estoy triste", "Tengo miedo o ansiedad"]
         );
       }
     }
