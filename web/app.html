@@ -387,7 +387,12 @@
         text: "Sentir culpa por querer un descanso o por desear que la situación cambie es una respuesta humana natural. El agotamiento no borra el amor que sientes por tu familiar.",
         author: "Dra. Elena Gómez — Psicooncóloga",
         quote: "'El autocuidado del cuidador no es un lujo ni un acto egoísta; es una parte indispensable del esquema de salud del paciente.'",
-        options: ["¿Cómo manejo el cansancio?", "Probar ejercicio de respiración", "Escribir un desahogo"]
+        options: ["¿Cómo manejo el cansancio?", "Probar ejercicio de respiración", "Escribir un desahogo"],
+        cierre: {
+          mensaje: "Antes de cerrar, un ejercicio sencillo: escribe lo que le dirías a un amigo que se sintiera como tú. Leerlo ayuda a soltar la culpa.",
+          actividad: "desahogo",
+          actividadTexto: "Escribe lo que le dirías a ese amigo que carga tu misma culpa. Nadie más lo va a leer."
+        }
       },
       "cansancio": {
         articulo: "el",
@@ -395,7 +400,12 @@
         text: "Llevar semanas o meses sin un sueño reparador afecta directamente tu sistema nervioso. Es esperable que sientas poca paciencia o la mente nublada.",
         author: "Dr. Marco Silva — Especialista en Medicina del Sueño",
         quote: "'Cuando no puedes pausar el entorno, debes forzar micro-pausas somáticas de 2 minutos durante el día.'",
-        options: ["Probar ejercicio de respiración", "Siento culpa", "Líneas de ayuda SOS"]
+        options: ["Probar ejercicio de respiración", "Siento culpa", "Líneas de ayuda SOS"],
+        cierre: {
+          mensaje: "Ya hicimos un buen recorrido. Tu cuerpo también necesita un respiro, así que cerremos con una pausa de un minuto.",
+          actividad: "respiracion",
+          actividadTexto: "Vamos con un minuto de respiración: inhala 4, sostén 4 y exhala 6. Deja caer los hombros."
+        }
       },
       "rabia": {
         articulo: "la",
@@ -403,7 +413,12 @@
         text: "La frustración con los trámites, los médicos o la situación es válida. Reaccionar con rabia no te convierte en una mala persona, indica que sobrepasaste tu límite.",
         author: "Lic. Claudia Morales — Terapeuta Familiar",
         quote: "'No reprimas la emoción. Reconócela en silencio: estoy sintiendo rabia porque estoy agotado.'",
-        options: ["Escribir un desahogo", "Probar ejercicio de respiración", "Volver al inicio"]
+        options: ["Escribir un desahogo", "Probar ejercicio de respiración", "Volver al inicio"],
+        cierre: {
+          mensaje: "Llevas razón en sentir lo que sientes. Antes de cerrar, soltemos por escrito un poco de esa carga.",
+          actividad: "desahogo",
+          actividadTexto: "Escribe sin filtros eso que te tiene con rabia. Al dar a «Soltar», se borra."
+        }
       },
       "soledad": {
         articulo: "la",
@@ -411,7 +426,12 @@
         text: "Es agotador sostener todo mientras sientes que a nadie le importa cómo estás tú. Que el foco esté puesto en el paciente no significa que tú no importes ni que lo que sientes sea invisible.",
         author: "Lic. Claudia Morales — Terapeuta Familiar",
         quote: "'También eres parte de la historia, no solo el soporte. Tu cansancio y tu dolor merecen un lugar.'",
-        options: ["Escribir un desahogo", "Probar ejercicio de respiración", "Siento culpa"]
+        options: ["Escribir un desahogo", "Probar ejercicio de respiración", "Siento culpa"],
+        cierre: {
+          mensaje: "Gracias por confiarme esto. Antes de irnos, pon en palabras lo que hoy necesitas y de quién te gustaría recibirlo.",
+          actividad: "desahogo",
+          actividadTexto: "Escribe qué necesitas hoy y a quién podrías pedírselo. Es para ti, nadie más lo lee."
+        }
       },
       "tristeza": {
         articulo: "la",
@@ -419,7 +439,12 @@
         text: "La tristeza y el desgaste emocional aparecen cuando sostienes mucho durante demasiado tiempo. No es debilidad: es la señal de que llevas una carga real. Permitirte sentirla, sin forzarte, también es cuidarte.",
         author: "Dra. Elena Gómez — Psicooncóloga",
         quote: "'Las emociones que no se nombran se acumulan; ponerles nombre es el primer paso para que bajen de intensidad.'",
-        options: ["Probar ejercicio de respiración", "Escribir un desahogo", "Líneas de ayuda SOS"]
+        options: ["Probar ejercicio de respiración", "Escribir un desahogo", "Líneas de ayuda SOS"],
+        cierre: {
+          mensaje: "Has sostenido mucho hoy. Terminemos con una pausa amable para tu cuerpo.",
+          actividad: "respiracion",
+          actividadTexto: "Vamos con un minuto de respiración suave: inhala 4, sostén 4 y exhala 6."
+        }
       },
       "miedo": {
         articulo: "el",
@@ -427,7 +452,12 @@
         text: "La incertidumbre sobre lo que vendrá —resultados, tratamientos, el futuro— es una de las cargas más difíciles de sostener. Sentir miedo no significa que no puedas: significa que algo te importa mucho.",
         author: "Dra. Elena Gómez — Psicooncóloga",
         quote: "'La ansiedad vive en el futuro. Volver al momento presente, aunque sea por un minuto, le devuelve el timón a tu cuerpo.'",
-        options: ["Probar ejercicio de respiración", "Escribir un desahogo", "Siento culpa"]
+        options: ["Probar ejercicio de respiración", "Escribir un desahogo", "Siento culpa"],
+        cierre: {
+          mensaje: "Ya diste un paso importante al ponerle nombre al miedo. Cerremos volviendo al momento presente.",
+          actividad: "respiracion",
+          actividadTexto: "Respira conmigo un minuto: inhala 4, sostén 4 y exhala 6. Vuelve al aquí y ahora."
+        }
       }
     };
 
@@ -435,6 +465,7 @@
     let contadorInteracciones = 0;
     const MAX_INTERACCIONES = 5;
     const temasVistos = new Set();
+    let ultimoTema = null;
 
     let companionName = localStorage.getItem('companionName') || 'Alma';
     let historial = [];               // memoria de la conversación (local)
@@ -576,55 +607,70 @@
       return null;
     }
 
+    // ---------- Cierre de ciclo: mensaje + actividad según lo que siente la persona ----------
+    const CIERRE_DEFAULT = {
+      mensaje: "Hagamos una pausa breve para cerrar con calma.",
+      actividad: "respiracion",
+      actividadTexto: "Vamos con un minuto de respiración: inhala 4, sostén 4 y exhala 6."
+    };
+
+    function cerrarCiclo(yaHayActividad, tema) {
+      let datos;
+      if (yaHayActividad) {
+        datos = { mensaje: "Que este ejercicio te acompañe. Cuando quieras, aquí sigo para escucharte.", actividad: null };
+      } else {
+        datos = (tema && knowledgeBase[tema] && knowledgeBase[tema].cierre) ? knowledgeBase[tema].cierre : CIERRE_DEFAULT;
+      }
+      appendBotMessage(datos.mensaje, ["Seguir conversando", "Volver al inicio"]);
+      if (datos.actividad === "desahogo") renderNoteExercise(datos.actividadTexto);
+      else if (datos.actividad === "respiracion") renderBreathingExercise(datos.actividadTexto);
+      contadorInteracciones = 0;
+    }
+
     // ---------- Motor ----------
     function processInput(inputRaw) {
       const norm = normalizar(inputRaw);
       const tokens = norm.split(' ').filter(Boolean);
       contadorInteracciones++;
+      const esUltima = contadorInteracciones >= MAX_INTERACCIONES;
 
-      // Límite de 5 interacciones para evitar fatiga cognitiva
-      if (contadorInteracciones >= MAX_INTERACCIONES) {
-        appendBotMessage(
-          "Hemos recorrido varias reflexiones hoy. Para no fatigar tu mente, te propongo hacer una pausa aquí. Cuidar de ti también es soltar la pantalla un momento.",
-          ["Probar ejercicio de respiración", "Escribir un desahogo", "Reiniciar conversación"],
-          {
-            quote: "'El descanso mental requiere aprender a cerrar ciclos de procesamiento durante el día.'",
-            author: "Dr. Marco Silva — Especialista en Salud Mental"
-          }
-        );
-        contadorInteracciones = 0; // Reinicio silencioso para usos posteriores
+      // Comandos de herramientas (se resuelven antes que los temas)
+      if (tieneAlguno(norm, tokens, ["respira"])) { renderBreathingExercise(); if (esUltima) cerrarCiclo(true, ultimoTema); return; }
+      if (tieneAlguno(norm, tokens, ["desahog", "escrib", "soltar", "bitacora"])) { renderNoteExercise(); if (esUltima) cerrarCiclo(true, ultimoTema); return; }
+      if (tieneAlguno(norm, tokens, ["sos", "crisis", "emergencia", "suicid", "linea de ayuda", "lineas de ayuda"])) { triggerSOS(); if (esUltima) contadorInteracciones = 0; return; }
+      if (tieneAlguno(norm, tokens, ["reiniciar", "reinicia", "borrar conversacion", "nueva conversacion", "empezar de nuevo"])) { nuevaConversacion(); return; }
+      if (tieneAlguno(norm, tokens, ["volver al inicio", "volver inicio", "volver al menu"])) { volverInicio(); return; }
+      if (tieneAlguno(norm, tokens, ["seguir conversando", "seguimos conversando", "continuemos"])) {
+        appendBotMessage("Aquí sigo contigo. Cuéntame qué más necesitas poner en palabras hoy.", ["Estoy triste", "Tengo miedo o ansiedad", "Me siento agotado/a"]);
         return;
       }
 
-      // Comandos de herramientas (se resuelven antes que los temas)
-      if (tieneAlguno(norm, tokens, ["respira"])) { renderBreathingExercise(); return; }
-      if (tieneAlguno(norm, tokens, ["desahog", "escrib", "soltar", "bitacora"])) { renderNoteExercise(); return; }
-      if (tieneAlguno(norm, tokens, ["sos", "crisis", "emergencia", "suicid", "linea de ayuda", "lineas de ayuda"])) { triggerSOS(); return; }
-      if (tieneAlguno(norm, tokens, ["reiniciar", "reinicia", "borrar conversacion", "nueva conversacion", "empezar de nuevo"])) { nuevaConversacion(); return; }
-      if (tieneAlguno(norm, tokens, ["volver al inicio", "volver inicio", "volver al menu"])) { volverInicio(); return; }
-
       // Detección de temas y prevención de repetición
       const tema = detectarTema(norm, tokens);
+      if (tema) ultimoTema = tema;
 
       if (tema) {
         if (temasVistos.has(tema)) {
           const articulo = knowledgeBase[tema].articulo || 'el';
           appendBotMessage(
             "Ya revisamos una pauta sobre " + articulo + " " + tema + ". Para no dar vueltas sobre lo mismo, ¿te gustaría hacer un ejercicio práctico de regulación o escribir lo que sientes?",
-            ["Probar ejercicio de respiración", "Escribir un desahogo", "Líneas de ayuda SOS"]
+            esUltima ? [] : ["Probar ejercicio de respiración", "Escribir un desahogo", "Líneas de ayuda SOS"]
           );
         } else {
           temasVistos.add(tema);
           const data = knowledgeBase[tema];
-          appendBotMessage(data.text, data.options, { quote: data.quote, author: data.author });
+          appendBotMessage(data.text, esUltima ? [] : data.options, { quote: data.quote, author: data.author });
         }
       } else {
         // Fallback empático: nunca expone que "no entiende" las palabras
         appendBotMessage(
           "Gracias por confiarme esto. No necesitas decirlo de una forma exacta: lo que sientes tiene sentido, incluso cuando cuesta ponerle nombre.\n\n¿Qué se parece más a lo que traes hoy?",
-          ["Me siento agotado/a", "Siento culpa", "Siento rabia o frustración", "Estoy triste", "Tengo miedo o ansiedad"]
+          esUltima ? [] : ["Me siento agotado/a", "Siento culpa", "Siento rabia o frustración", "Estoy triste", "Tengo miedo o ansiedad"]
         );
       }
+
+      // El 5.º intercambio se responde normal y LUEGO se cierra con mensaje + actividad
+      if (esUltima) cerrarCiclo(false, tema || ultimoTema);
     }
 
     // Botones-opción: se pintan como mensaje del usuario y se resuelven.
@@ -634,12 +680,12 @@
     }
 
     // ---------- Herramientas dentro del chat ----------
-    function renderBreathingExercise() {
+    function renderBreathingExercise(intro) {
       detenerRespiracion();
       const div = document.createElement('div');
       div.className = 'message model';
       div.innerHTML =
-        '<p>Vamos con un minuto de respiración guiada: inhala 4 segundos, sostén 4 y exhala 6. Apoya los pies y deja caer los hombros.</p>' +
+        '<p>' + (intro || 'Vamos con un minuto de respiración guiada: inhala 4 segundos, sostén 4 y exhala 6. Apoya los pies y deja caer los hombros.') + '</p>' +
         '<div class="ejercicio-inline">' +
           '<div class="breath-circle" id="resp-circulo">Prepárate</div>' +
           '<div class="resp-seg" id="resp-seg">60</div>' +
@@ -693,11 +739,11 @@
       if (respTimer) { clearInterval(respTimer); respTimer = null; }
     }
 
-    function renderNoteExercise() {
+    function renderNoteExercise(intro) {
       const div = document.createElement('div');
       div.className = 'message model';
       div.innerHTML =
-        '<p>Escribe sin filtros lo que llevas encima. Si le das a «Soltar», se borra al instante: es un ritual, nadie lo lee.</p>' +
+        '<p>' + (intro || 'Escribe sin filtros lo que llevas encima. Si le das a «Soltar», se borra al instante: es un ritual, nadie lo lee.') + '</p>' +
         '<div class="ejercicio-inline">' +
           '<textarea class="nota-texto" id="nota-texto" placeholder="Escribe lo que sientes en este momento…"></textarea>' +
           '<button class="btn-inline" id="nota-btn" type="button">Soltar y borrar</button>' +
@@ -792,6 +838,7 @@
     // ---------- Onboarding y nombre ----------
     function volverInicio() {
       if (window.speechSynthesis) speechSynthesis.cancel();
+      contadorInteracciones = 0;
       chatArea.style.display = 'none';
       onboardingScreen.style.display = 'block';
       document.getElementById('companion-name').value = companionName;
