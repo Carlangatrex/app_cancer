@@ -445,6 +445,24 @@
     const MAX_INTERACCIONES = 5;
     const temasVistos = new Set();
     let ultimoTema = null;
+    let idxSeguimiento = 0;
+    let idxUltimoTurno = 0;
+
+    // Reflejos para cuando la persona sigue hablando del mismo tema (nunca se repiten seguidos).
+    const SEGUIMIENTOS = [
+      "Sigo aquí, escuchándote sin prisa. No tienes que ordenarlo ni resumirlo.",
+      "Gracias por seguir abriéndote. Lo que cuentas tiene peso, aunque no siempre lo vean los demás.",
+      "Te leo con atención. Puedes soltarlo así, en partes, como te salga.",
+      "Lo que describes no es poca cosa. Aquí no tienes que minimizarlo.",
+      "Entiendo. Y aunque hoy nadie te lo reconozca, lo que haces cuenta."
+    ];
+
+    // Cierre del turno final: reconoce sin dejar ninguna pregunta en el aire.
+    const ULTIMO_TURNO = [
+      "Gracias por confiarme todo esto. Reconozco lo que cargas, aunque a veces parezca que nadie lo ve.",
+      "Te escuché en cada parte. Lo que sostienes importa, y hoy tuvo un lugar aquí.",
+      "Gracias por abrirte conmigo. Lo que haces no es poca cosa, aunque no siempre te lo reconozcan."
+    ];
 
     let companionName = localStorage.getItem('companionName') || 'Alma';
     let historial = [];               // memoria de la conversación (local)
@@ -616,20 +634,22 @@
       const tema = detectarTema(norm, tokens);
       if (tema) ultimoTema = tema;
 
-      if (tema) {
-        if (temasVistos.has(tema)) {
-          appendBotMessage("Gracias por seguir contándome. Reconozco que esto sigue pesándote.\n\n¿Hay algo nuevo de eso que quieras contarme?");
-        } else {
-          temasVistos.add(tema);
-          appendBotMessage(knowledgeBase[tema].text);
-        }
-      } else {
-        // Fallback empático: reconoce y sigue la conversación (sin opciones).
-        appendBotMessage("No necesitas ponerle un nombre exacto: reconozco que algo te pesa y te creo.\n\n¿Quieres contarme un poco más de qué se trata?");
+      if (esUltima) {
+        // Último turno: solo reconocimiento (sin pregunta), y enseguida el cierre.
+        appendBotMessage(ULTIMO_TURNO[idxUltimoTurno % ULTIMO_TURNO.length]);
+        idxUltimoTurno++;
+        cerrarCiclo(false, tema || ultimoTema);
+        return;
       }
 
-      // El 5.º intercambio se responde normal y LUEGO se cierra con mensaje + actividad
-      if (esUltima) cerrarCiclo(false, tema || ultimoTema);
+      if (tema && !temasVistos.has(tema)) {
+        temasVistos.add(tema);
+        appendBotMessage(knowledgeBase[tema].text);
+      } else {
+        // Continuación (mismo tema o sin palabras clave): reflejo variado, nunca el mismo seguido.
+        appendBotMessage(SEGUIMIENTOS[idxSeguimiento % SEGUIMIENTOS.length]);
+        idxSeguimiento++;
+      }
     }
 
     // ---------- Herramientas dentro del chat ----------
@@ -779,6 +799,9 @@
     function volverInicio() {
       if (window.speechSynthesis) speechSynthesis.cancel();
       contadorInteracciones = 0;
+      ultimoTema = null;
+      idxSeguimiento = 0;
+      idxUltimoTurno = 0;
       chatArea.style.display = 'none';
       onboardingScreen.style.display = 'block';
       document.getElementById('companion-name').value = companionName;
@@ -863,6 +886,9 @@
       historial = [];
       contadorInteracciones = 0;
       temasVistos.clear();
+      ultimoTema = null;
+      idxSeguimiento = 0;
+      idxUltimoTurno = 0;
       try { localStorage.removeItem(CLAVE_HISTORIAL); } catch (e) {}
       messagesDiv.innerHTML = '';
       addWelcomeMessage();
