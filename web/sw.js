@@ -1,10 +1,10 @@
 // Service Worker de Respiro. Estrategias:
 // - Navegaciones (HTML): network-first, y si el servidor no responde, la versión en caché.
 // - Assets estáticos precacheados (icono, svg, manifest): cache-first.
-// - Todo lo demás (reportes de test, peticiones a la API de Gemini): pasa a red, sin cachear.
-// Así, en desarrollo siempre se ve el HTML recién editado, y la API nunca se cachea.
+// - Todo lo demás se deja pasar a red, sin cachear.
+// Así siempre se ve el HTML más reciente y los cambios llegan con solo recargar.
 
-const CACHE = 'alma-v5';
+const CACHE = 'alma-v6';
 const PRECACHE = [
   './app.html',
   './politica-de-privacidad.html',
