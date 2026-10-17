@@ -164,8 +164,9 @@ object CompanionPromptEngine {
             ""
         }
 
-        // Fiel al prompt común del prototipo web (web-netlify/index.html, getSystemPrompt()).
-        // Si cambia un contenido, cambiar aquí: ambas plataformas deben hablar igual.
+        // Prompt de personalidad del acompañante en la app Android (Gemini).
+        // El prototipo web (web/index.html) ya no usa Gemini: corre un motor de
+        // conversación local determinista, así que este texto es solo de Android.
         return """
 Eres $avatarName, acompañante emocional del CUIDADOR PRIMARIO de una persona con cáncer. Tu lector no es la persona enferma: es el familiar que cuida. Este espacio es suyo.
 $caregiverInfo$contextInfo
