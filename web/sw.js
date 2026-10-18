@@ -1,10 +1,11 @@
 // Service Worker de Respiro. Estrategias:
 // - Navegaciones (HTML): network-first, y si el servidor no responde, la versión en caché.
 // - Assets estáticos precacheados (icono, svg, manifest): cache-first.
+// - Audios de voz (audio/…): cache-first (se van guardando a medida que suenan).
 // - Todo lo demás se deja pasar a red, sin cachear.
 // Así siempre se ve el HTML más reciente y los cambios llegan con solo recargar.
 
-const CACHE = 'alma-v9';
+const CACHE = 'alma-v10';
 const PRECACHE = [
   './app.html',
   './politica-de-privacidad.html',
@@ -46,6 +47,20 @@ self.addEventListener('fetch', (event) => {
           return res;
         })
         .catch(() => caches.match('./app.html'))
+    );
+    return;
+  }
+
+  // Audios de voz: cache-first, guardándolos la primera vez que suenan.
+  if (req.url.indexOf('/audio/') !== -1) {
+    event.respondWith(
+      caches.match(req).then((guardado) => guardado || fetch(req).then((res) => {
+        if (res && res.ok) {
+          const copia = res.clone();
+          caches.open(CACHE).then((cache) => cache.put(req, copia)).catch(() => {});
+        }
+        return res;
+      }))
     );
     return;
   }

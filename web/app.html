@@ -372,12 +372,8 @@
     <div class="modal">
       <button class="modal-close" onclick="cerrarModales()" aria-label="Cerrar">×</button>
       <h3>Ajustes de tu acompañante</h3>
-      <p class="modal-sub">Nombre y voz con la que te hablará.</p>
+      <p class="modal-sub">Ponle el nombre con el que quieras llamarlo.</p>
       <input type="text" class="companion-name-input" id="nuevo-nombre" maxlength="30" aria-label="Nuevo nombre" placeholder="Nombre">
-      <label class="pick-label" for="voz-select">Voz</label>
-      <select class="companion-name-input" id="voz-select" aria-label="Voz del acompañante"></select>
-      <p class="onboarding-note" id="voz-hint"></p>
-      <button class="btn-principal" onclick="probarVoz()">Probar voz</button>
       <button class="btn-principal" onclick="guardarNombre()">Guardar</button>
     </div>
   </div>
@@ -488,6 +484,40 @@
       "Gracias por abrirte. No tienes que sostenerlo solo."
     ];
 
+    // ---------- Guion de voz ----------
+    // Todas las frases fijas del acompañante viven aquí (misma fuente que usa el
+    // generador de audios). Cada frase tiene una clave: el chat intenta reproducir
+    // audio/<acompañante>/<clave>.mp3 y, si no está, usa la voz del sistema.
+    const TEXTO_ACT_CHOOSE = 'Elige algo que te venga bien ahora mismo, sin obligación:';
+    const TEXTO_ACT_CONVERSAR = 'Me quedo contigo. Cuéntame lo que quieras.';
+    const TEXTO_ACT_MUSICA = 'Busca una canción que te calme y déjala sonar sin hacer nada más durante unos minutos. La música regula el cuerpo sin pedirte esfuerzo.';
+    const TEXTO_BREATHE = 'Vamos con un minuto de respiración guiada: inhala 4 segundos, sostén 4 y exhala 6. Apoya los pies y deja caer los hombros.';
+    const TEXTO_NOTA = 'Escribe sin filtros lo que llevas encima. Si le das a «Soltar», se borra al instante: es un ritual, nadie lo lee.';
+    const TEXTO_UI_SEGUIR = 'Aquí sigo contigo. Cuéntame qué más necesitas poner en palabras hoy.';
+    const TEXTO_UI_SOLTADO = 'Soltado. Que siga volando.';
+    const TEXTO_YA_ACTIVIDAD = 'Que este ejercicio te acompañe. Cuando quieras, aquí sigo.';
+    const TEXTO_WELCOME = 'Te doy la bienvenida. Este espacio es tuyo: aquí nadie te va a pedir el parte médico ni te va a decir que seas fuerte. ¿Cómo estás hoy y qué es lo que más te pesa ahora mismo?';
+
+    function guionVoz() {
+      const g = {};
+      for (const t in knowledgeBase) {
+        g['kb_' + t + '_text'] = knowledgeBase[t].text;
+        g['kb_' + t + '_cierre'] = knowledgeBase[t].cierre.mensaje + ' ' + knowledgeBase[t].cierre.quote;
+      }
+      g['default_cierre'] = CIERRE_DEFAULT.mensaje + ' ' + CIERRE_DEFAULT.quote;
+      ULTIMO_TURNO.forEach(function (x, i) { g['ult_' + i] = x; });
+      g['act_choose'] = TEXTO_ACT_CHOOSE;
+      g['act_conversar'] = TEXTO_ACT_CONVERSAR;
+      g['act_musica'] = TEXTO_ACT_MUSICA;
+      g['breathe'] = TEXTO_BREATHE;
+      g['nota'] = TEXTO_NOTA;
+      g['ui_seguir'] = TEXTO_UI_SEGUIR;
+      g['ui_soltado'] = TEXTO_UI_SOLTADO;
+      g['ya_actividad'] = TEXTO_YA_ACTIVIDAD;
+      g['welcome'] = TEXTO_WELCOME;
+      return g;
+    }
+
     // ---------- Acompañantes (estilo + avatar + tono de voz) ----------
     // Sin nombres: los elige la persona. Cada uno tiene una voz y un estilo distintos.
     const COMPANEROS = [
@@ -564,7 +594,8 @@
     }
 
     // Respuesta del acompañante: texto + cita opcional (sin botones: es conversación).
-    function appendBotMessage(text, extra) {
+    // `clave` identifica el audio pregrabado; `textoVoz` es lo que se lee si no hay audio.
+    function appendBotMessage(text, extra, clave, textoVoz) {
       const div = document.createElement('div');
       div.className = 'message model';
 
@@ -589,7 +620,7 @@
 
       historial.push({ role: 'model', text: text });
       guardarHistorial();
-      speakText(text);
+      hablar(clave, textoVoz || text);
       return div;
     }
 
@@ -668,12 +699,14 @@
 
     function cerrarCiclo(yaHayActividad, tema) {
       if (yaHayActividad) {
-        appendBotMessage("Que este ejercicio te acompañe. Cuando quieras, aquí sigo.");
+        appendBotMessage(TEXTO_YA_ACTIVIDAD, null, 'ya_actividad');
         contadorInteracciones = 0;
         return;
       }
       const datos = (tema && knowledgeBase[tema] && knowledgeBase[tema].cierre) ? knowledgeBase[tema].cierre : CIERRE_DEFAULT;
-      appendBotMessage(datos.mensaje, datos.quote ? { quote: datos.quote, author: datos.author } : null);
+      const clave = (tema && knowledgeBase[tema] && knowledgeBase[tema].cierre) ? ('kb_' + tema + '_cierre') : 'default_cierre';
+      const textoVoz = datos.mensaje + (datos.quote ? ' ' + datos.quote : '');
+      appendBotMessage(datos.mensaje, datos.quote ? { quote: datos.quote, author: datos.author } : null, clave, textoVoz);
       renderActivityChoices(datos.actividad);
       contadorInteracciones = 0;
     }
@@ -683,7 +716,7 @@
       const div = document.createElement('div');
       div.className = 'message model';
       const p = document.createElement('p');
-      p.textContent = 'Elige algo que te venga bien ahora mismo, sin obligación:';
+      p.textContent = TEXTO_ACT_CHOOSE;
       div.appendChild(p);
 
       const cont = document.createElement('div');
@@ -705,26 +738,27 @@
       div.appendChild(cont);
       messagesDiv.appendChild(div);
       scrollAbajo();
+      hablar('act_choose', TEXTO_ACT_CHOOSE);
     }
 
     function elegirActividad(id, btn) {
       messagesDiv.querySelectorAll('.opciones .opcion-btn').forEach(function (b) { b.disabled = true; });
       if (btn) btn.classList.add('recomendada');
-      if (id === 'respiracion') renderBreathingExercise('Vamos con un minuto de respiración: inhala 4, sostén 4 y exhala 6.');
-      else if (id === 'desahogo') renderNoteExercise('Escribe sin filtros lo que llevas encima. Al soltar, se borra.');
+      if (id === 'respiracion') renderBreathingExercise();
+      else if (id === 'desahogo') renderNoteExercise();
       else if (id === 'musica') renderMusicSuggestion();
-      else appendBotMessage('Me quedo contigo. Cuéntame lo que quieras.');
+      else appendBotMessage(TEXTO_ACT_CONVERSAR, null, 'act_conversar');
     }
 
     function renderMusicSuggestion() {
       const div = document.createElement('div');
       div.className = 'message model';
-      div.innerHTML = '<p>Busca una canción que te calme y déjala sonar sin hacer nada más durante unos minutos. La música regula el cuerpo sin pedirte esfuerzo.</p>';
+      div.innerHTML = '<p>' + TEXTO_ACT_MUSICA + '</p>';
       messagesDiv.appendChild(div);
       scrollAbajo();
       historial.push({ role: 'model', text: 'Sugerencia: escuchar música para regularse.' });
       guardarHistorial();
-      speakText('Busca una canción que te calme y déjala sonar unos minutos. La música regula el cuerpo sin pedirte esfuerzo.');
+      hablar('act_musica', TEXTO_ACT_MUSICA);
     }
 
     // ---------- Motor ----------
@@ -741,7 +775,7 @@
       if (tieneAlguno(norm, tokens, ["reiniciar", "reinicia", "borrar conversacion", "nueva conversacion", "empezar de nuevo"])) { nuevaConversacion(); return; }
       if (tieneAlguno(norm, tokens, ["volver al inicio", "volver inicio", "volver al menu"])) { volverInicio(); return; }
       if (tieneAlguno(norm, tokens, ["seguir conversando", "seguimos conversando", "continuemos"])) {
-        appendBotMessage("Aquí sigo contigo. Cuéntame qué más necesitas poner en palabras hoy.");
+        appendBotMessage(TEXTO_UI_SEGUIR, null, 'ui_seguir');
         return;
       }
 
@@ -751,7 +785,8 @@
 
       if (esUltima) {
         // Último turno: solo reconocimiento (sin pregunta), y enseguida el cierre.
-        appendBotMessage(ULTIMO_TURNO[idxUltimoTurno % ULTIMO_TURNO.length]);
+        const iu = idxUltimoTurno % ULTIMO_TURNO.length;
+        appendBotMessage(ULTIMO_TURNO[iu], null, 'ult_' + iu);
         idxUltimoTurno++;
         cerrarCiclo(false, tema || ultimoTema);
         return;
@@ -759,11 +794,12 @@
 
       if (tema && !temasVistos.has(tema)) {
         temasVistos.add(tema);
-        appendBotMessage(knowledgeBase[tema].text);
+        appendBotMessage(knowledgeBase[tema].text, null, 'kb_' + tema + '_text');
       } else {
         // Continuación (mismo tema o sin palabras clave): reflejo variado, nunca el mismo seguido.
         const segs = companero.seguimientos;
-        appendBotMessage(segs[idxSeguimiento % segs.length]);
+        const is = idxSeguimiento % segs.length;
+        appendBotMessage(segs[is], null, 'seg_' + is);
         idxSeguimiento++;
       }
     }
@@ -774,7 +810,7 @@
       const div = document.createElement('div');
       div.className = 'message model';
       div.innerHTML =
-        '<p>' + (intro || 'Vamos con un minuto de respiración guiada: inhala 4 segundos, sostén 4 y exhala 6. Apoya los pies y deja caer los hombros.') + '</p>' +
+        '<p>' + (intro || TEXTO_BREATHE) + '</p>' +
         '<div class="ejercicio-inline">' +
           '<div class="breath-circle" id="resp-circulo">Prepárate</div>' +
           '<div class="resp-seg" id="resp-seg">60</div>' +
@@ -784,6 +820,7 @@
       scrollAbajo();
       historial.push({ role: 'model', text: 'Ejercicio de respiración guiada de un minuto (4-4-6).' });
       guardarHistorial();
+      hablar('breathe', TEXTO_BREATHE);
       document.getElementById('resp-btn').addEventListener('click', function () { iniciarRespiracion(this); });
     }
 
@@ -832,7 +869,7 @@
       const div = document.createElement('div');
       div.className = 'message model';
       div.innerHTML =
-        '<p>' + (intro || 'Escribe sin filtros lo que llevas encima. Si le das a «Soltar», se borra al instante: es un ritual, nadie lo lee.') + '</p>' +
+        '<p>' + (intro || TEXTO_NOTA) + '</p>' +
         '<div class="ejercicio-inline">' +
           '<textarea class="nota-texto" id="nota-texto" placeholder="Escribe lo que sientes en este momento…"></textarea>' +
           '<button class="btn-inline" id="nota-btn" type="button">Soltar y borrar</button>' +
@@ -841,6 +878,7 @@
       scrollAbajo();
       historial.push({ role: 'model', text: 'Bitácora de desahogo (se borra al soltar).' });
       guardarHistorial();
+      hablar('nota', TEXTO_NOTA);
 
       const ta = document.getElementById('nota-texto');
       const btn = document.getElementById('nota-btn');
@@ -848,7 +886,7 @@
       if (btn) btn.addEventListener('click', function () {
         if (ta && ta.value.trim()) {
           ta.value = '';
-          appendBotMessage("Soltado. Que siga volando.");
+          appendBotMessage(TEXTO_UI_SOLTADO, null, 'ui_soltado');
         } else if (ta) {
           ta.focus();
         }
@@ -913,6 +951,7 @@
 
     // ---------- Onboarding y nombre ----------
     function volverInicio() {
+      detenerAudio();
       if (window.speechSynthesis) speechSynthesis.cancel();
       contadorInteracciones = 0;
       ultimoTema = null;
@@ -1010,35 +1049,20 @@
       div.appendChild(p);
       messagesDiv.appendChild(div);
       scrollAbajo();
-      speakText(p.textContent);
+      hablar('welcome', p.textContent);
     }
 
     function editCompanionName() {
       const campo = document.getElementById('nuevo-nombre');
       if (!campo) return;
       campo.value = companionName;
-      cargarVoces();
       abrirModal('modal-nombre');
       setTimeout(function () { campo.focus(); campo.select(); }, 50);
-    }
-
-    function probarVoz() {
-      if (!window.speechSynthesis) return;
-      const sel = document.getElementById('voz-select');
-      const todas = speechSynthesis.getVoices();
-      const v = sel && todas.find(function (x) { return x.name === sel.value; });
-      if (!v) return;
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance('Hola, aquí estoy contigo. Cuando quieras, cuéntame cómo estás.');
-      u.voice = v; u.lang = v.lang; u.rate = companero.voz.rate; u.pitch = companero.voz.pitch;
-      speechSynthesis.speak(u);
     }
 
     function guardarNombre() {
       const campo = document.getElementById('nuevo-nombre');
       const nuevo = (campo.value || '').trim();
-      const sel = document.getElementById('voz-select');
-      if (sel && sel.value) localStorage.setItem('vozId_' + companero.id, sel.value);
       if (!nuevo) return;
       companionName = nuevo;
       localStorage.setItem('companionName', companionName);
@@ -1074,6 +1098,7 @@
     function nuevaConversacion() {
       detenerGrabacion();
       detenerRespiracion();
+      detenerAudio();
       if (window.speechSynthesis) speechSynthesis.cancel();
       historial = [];
       contadorInteracciones = 0;
@@ -1152,12 +1177,11 @@
       localStorage.setItem('speakAloud', speakAloud ? '1' : '0');
       const sb = document.getElementById('speak-button');
       if (sb) sb.classList.toggle('active', speakAloud);
-      if (!speakAloud && window.speechSynthesis) speechSynthesis.cancel();
+      if (!speakAloud) { detenerAudio(); if (window.speechSynthesis) speechSynthesis.cancel(); }
       setStatus(speakAloud ? 'Lectura en voz alta activada.' : 'Lectura en voz alta desactivada.');
     }
 
     // ---- Voces: cada acompañante recibe una voz distinta y lo más natural posible ----
-    let vocesDisponibles = [];
     const VOCES_FEMENINAS = ['sabina', 'helena', 'laura', 'dalia', 'mónica', 'monica', 'paulina', 'lucía', 'lucia', 'marisol', 'ximena', 'elvira', 'esperanza', 'carmen', 'isabel', 'sofía', 'sofia', 'valentina', 'camila', 'spring', 'female', 'zira'];
     const VOCES_MASCULINAS = ['raul', 'raúl', 'pablo', 'jorge', 'diego', 'carlos', 'juan', 'álvaro', 'alvaro', 'david', 'miguel', 'javier', 'enrique', 'ricardo', 'male'];
 
@@ -1203,24 +1227,36 @@
       return voces[c.vozIndice % voces.length];
     }
 
-    function cargarVoces() {
-      if (!window.speechSynthesis) return;
-      const todas = speechSynthesis.getVoices();
-      vocesDisponibles = todas.filter(function (v) { return /^es/i.test(v.lang); });
-      if (!vocesDisponibles.length) vocesDisponibles = todas;
-      const sel = document.getElementById('voz-select');
-      const hint = document.getElementById('voz-hint');
-      const actual = vozDeCompanero(companero);
-      if (!sel) return;
-      sel.innerHTML = '';
-      vocesDisponibles.forEach(function (v) {
-        const o = document.createElement('option');
-        o.value = v.name;
-        o.textContent = v.name + ' (' + v.lang + ')';
-        sel.appendChild(o);
-      });
-      if (actual && vocesDisponibles.some(function (v) { return v.name === actual.name; })) sel.value = actual.name;
-      if (hint) hint.textContent = actual ? 'Voz asignada: ' + actual.name : 'Este dispositivo no tiene voces instaladas.';
+    // ---- Audios pregrabados (voz humana) con respaldo en la voz del sistema ----
+    // El chat intenta reproducir audio/<acompañante>/<clave>.mp3; si no existe,
+    // cae automáticamente a la voz del sistema (speakText).
+    let audioActual = null;
+
+    function detenerAudio() {
+      if (audioActual) {
+        try { audioActual.pause(); } catch (e) { /* nada */ }
+        audioActual = null;
+      }
+    }
+
+    function reproducirAudio(clave, textoRespaldo) {
+      detenerAudio();
+      const a = new Audio('audio/' + companero.id + '/' + clave + '.mp3');
+      audioActual = a;
+      a.onended = function () { if (audioActual === a) audioActual = null; };
+      a.onerror = function () {
+        if (audioActual !== a) return;
+        audioActual = null;
+        speakText(textoRespaldo);
+      };
+      const p = a.play();
+      if (p && p.catch) p.catch(function () { /* autoplay bloqueado: se queda en silencio */ });
+    }
+
+    function hablar(clave, texto) {
+      if (!speakAloud) return;
+      if (clave) { reproducirAudio(clave, texto); return; }
+      speakText(texto);
     }
 
     function speakText(text) {
@@ -1404,11 +1440,6 @@
     (function init() {
       const sb = document.getElementById('speak-button');
       if (sb) sb.classList.toggle('active', speakAloud);
-
-      if (window.speechSynthesis) {
-        cargarVoces();
-        speechSynthesis.onvoiceschanged = cargarVoces;
-      }
 
       iniciarOnboarding();
 
