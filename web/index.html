@@ -403,7 +403,7 @@
     const knowledgeBase = {
       "culpa": {
         keywords: ["culpa", "culpab", "culpar", "culpable", "remordimiento", "arrepent", "egoista", "egoismo", "mal cuidador", "mala cuidadora", "mal padre", "mala madre", "deberia haber", "no hice lo suficiente", "no es suficiente"],
-        text: "Gracias por confiármelo. Cargar con la sensación de que todo depende de ti desgasta de una manera que no siempre se ve.\n\n¿Qué es lo que más te pesa de eso ahora?",
+        text: "Cargar con la sensación de que todo depende de ti desgasta de una manera que no siempre se ve.\n\n¿Qué es lo que más te pesa de eso ahora?",
         cierre: {
           mensaje: "Antes de terminar, quiero dejarte algo contigo.",
           quote: "'El autocuidado del cuidador no es un lujo ni un acto egoísta; es una parte indispensable del esquema de salud del paciente.'",
@@ -414,7 +414,7 @@
       },
       "cansancio": {
         keywords: ["agotad", "agotamiento", "cansad", "cansan", "cansancio", "sueno", "dormir", "duermo", "insomnio", "fatiga", "extenuad", "desvelad", "sin energia", "sin fuerza", "no puedo mas", "exhaust", "rendid", "desgan"],
-        text: "Gracias por decírmelo. Cuando el descanso no llega, el cuerpo y la paciencia se van agotando.\n\n¿Cómo está siendo un día tuyo últimamente?",
+        text: "Cuando el descanso no llega, el cuerpo y la paciencia se van agotando.\n\n¿Cómo está siendo un día tuyo últimamente?",
         cierre: {
           mensaje: "Antes de cerrar, quiero que te des un respiro de verdad.",
           quote: "'Cuando no puedes pausar el entorno, debes forzar micro-pausas somáticas de 2 minutos durante el día.'",
@@ -425,7 +425,7 @@
       },
       "rabia": {
         keywords: ["rabia", "rabiet", "frustra", "enojad", "enojo", "furia", "furios", "bronca", "impacien", "irritab", "hart", "molest", "molesto", "molesta", "molestia", "cabread", "indigna", "ira"],
-        text: "Gracias por contármelo. Cuando uno da tanto, es difícil que no se desborde.\n\n¿Qué fue lo que pasó hoy?",
+        text: "Cuando uno da tanto, es difícil que no se desborde.\n\n¿Qué fue lo que pasó hoy?",
         cierre: {
           mensaje: "Antes de terminar, soltemos juntos un poco de esa carga.",
           quote: "'No reprimas la emoción. Reconócela en silencio: estoy sintiendo rabia porque estoy agotado.'",
@@ -436,7 +436,7 @@
       },
       "soledad": {
         keywords: ["soledad", "solitari", "invisible", "nadie pregunta", "nadie me pregunta", "nadie me ve", "nadie me escucha", "abandonad", "ignorad", "apartad", "no me ven", "no cuentan conmigo", "me siento solo", "me siento sola", "estoy solo", "estoy sola"],
-        text: "Gracias por abrirte. Llevar todo esto sin que nadie pregunte cómo estás pesa mucho.\n\n¿Quién está cerca de ti en estos días?",
+        text: "Llevar todo esto sin que nadie pregunte cómo estás pesa mucho.\n\n¿Quién está cerca de ti en estos días?",
         cierre: {
           mensaje: "Antes de irnos, quiero que pongas en palabras lo que necesitas.",
           quote: "'También eres parte de la historia, no solo el soporte. Tu cansancio y tu dolor merecen un lugar.'",
@@ -447,7 +447,7 @@
       },
       "tristeza": {
         keywords: ["triste", "tristeza", "desanimo", "llorar", "lloro", "llanto", "vacio", "desesperanz", "sin animo", "apagad", "melancol", "deprimid", "depresion", "desmotivad", "no le veo sentido"],
-        text: "Gracias por confiármelo. Sostener tanto durante tanto tiempo deja el ánimo por el suelo.\n\n¿Qué es lo que más te duele hoy?",
+        text: "Sostener tanto durante tanto tiempo deja el ánimo por el suelo.\n\n¿Qué es lo que más te duele hoy?",
         cierre: {
           mensaje: "Has sostenido mucho hoy. Terminemos con una pausa amable para tu cuerpo.",
           quote: "'Las emociones que no se nombran se acumulan; ponerles nombre es el primer paso para que bajen de intensidad.'",
@@ -458,7 +458,7 @@
       },
       "miedo": {
         keywords: ["miedo", "temeros", "ansiedad", "ansios", "angustia", "angustiad", "panico", "nervios", "preocupad", "preocupacion", "incertidumbre", "insegur", "no se que pasara", "no se que va a pasar", "futuro", "asusta"],
-        text: "Gracias por decírmelo. No saber qué va a pasar con alguien que quieres pesa en el cuerpo.\n\n¿Qué es lo que te tiene más inquieto?",
+        text: "No saber qué va a pasar con alguien que quieres pesa en el cuerpo.\n\n¿Qué es lo que te tiene más inquieto?",
         cierre: {
           mensaje: "Ya diste un paso importante al reconocerlo. Cerremos volviendo al presente.",
           quote: "'La ansiedad vive en el futuro. Volver al momento presente, aunque sea por un minuto, le devuelve el timón a tu cuerpo.'",
@@ -469,6 +469,70 @@
       }
     };
 
+    // ---------- Reflejos por tema ----------
+    // Cuando la persona sigue hablando del mismo tema, en vez de un "cuéntame más"
+    // genérico se le devuelve algo que responde a lo que siente.
+    const REFLEJOS = {
+      culpa: [
+        "Te exiges como si descansar fuera abandonar. No lo es.",
+        "Nadie te enseñó a sostener esto, y aun así lo haces cada día.",
+        "La culpa aparece justo donde más te importa. No te hace peor cuidador."
+      ],
+      cansancio: [
+        "Dormir mal arrastra todo lo demás. No es poca cosa lo que aguantas.",
+        "Cuando el cuerpo no descansa, hasta lo pequeño pesa el doble.",
+        "Ese cansancio no se quita con una siesta; viene de sostener demasiado."
+      ],
+      rabia: [
+        "Tiene sentido enfadarse cuando uno da tanto y recibe tan poco.",
+        "Contenerla todo el día cansa más que dejarla salir.",
+        "No es debilidad perder la paciencia. Es que llevas mucho aguantando."
+      ],
+      soledad: [
+        "Todos preguntan por el enfermo, y casi nadie por ti.",
+        "Tú también necesitas que alguien te mire a ti de vez en cuando.",
+        "No es egoísmo querer compañía. Es humano."
+      ],
+      tristeza: [
+        "La tristeza así no se arregla con ánimo; necesita su espacio.",
+        "Llorar lo que llevas dentro no es debilidad.",
+        "No tienes que estar bien para que los demás estén mejor."
+      ],
+      miedo: [
+        "Querer a alguien así da miedo; es parte de querer.",
+        "La incertidumbre desgasta aunque no te muevas.",
+        "El miedo no se apaga diciéndote que no pasa nada."
+      ]
+    };
+
+    // ---------- Ecos ----------
+    // Si la persona menciona algo concreto (dormir, estrés, dolor…), se le responde
+    // a eso y no a un tema genérico. Los patrones van sobre texto normalizado.
+    const ECOS = [
+      { re: /duerm|dorm|sueno|insomn|desvel|noche|trasnoch|descans/, lineas: [
+        "Dormir mal lo cambia todo; el cuerpo pasa factura.",
+        "Las noches sin descanso se pagan durante todo el día."
+      ] },
+      { re: /estres|presion|agob|trabajo|encima|mucho por hacer/, lineas: [
+        "Vivir con esa presión encima agota aunque no te muevas.",
+        "Cuando todo se junta, hasta respirar parece una tarea más."
+      ] },
+      { re: /duele|dolor|enferm|mal cuerpo/, lineas: [
+        "El cuerpo también carga lo que la cabeza no dice."
+      ] },
+      { re: /no puedo mas|ya no puedo|no aguanto|al limite|no doy mas/, lineas: [
+        "Llegar a ese punto no es rendirse.",
+        "Si aguantas tanto es porque llevas demasiado tiempo resistiendo."
+      ] },
+      { re: /nadie|sola|solo|a cargo|de mi cuenta|sin ayuda/, lineas: [
+        "No debería recaer todo sobre ti.",
+        "Tú también necesitas que alguien te sostenga."
+      ] },
+      { re: /hospital|medic|quimio|radio|doctor|cita|analitic|tratamiento/, lineas: [
+        "El hospital ya agota por sí solo."
+      ] }
+    ];
+
     // ---------- Estado del motor ----------
     let contadorInteracciones = 0;
     const MAX_INTERACCIONES = 5;
@@ -476,6 +540,31 @@
     let ultimoTema = null;
     let idxSeguimiento = 0;
     let idxUltimoTurno = 0;
+    let ultimaFrase = '';
+    const rotacion = new Map();
+
+    // Elige una frase de un repertorio sin repetir la inmediatamente anterior,
+    // y devuelve su clave de audio.
+    function elegirConClave(repertorio, prefijo) {
+      if (!repertorio || !repertorio.length) return { texto: '', clave: null };
+      let i = rotacion.get(repertorio) || 0;
+      let idx = i % repertorio.length;
+      let vue = 0;
+      while (repertorio[idx] === ultimaFrase && vue < repertorio.length) {
+        i++; idx = i % repertorio.length; vue++;
+      }
+      rotacion.set(repertorio, i + 1);
+      ultimaFrase = repertorio[idx];
+      return { texto: repertorio[idx], clave: prefijo + idx };
+    }
+
+    // Busca un eco que responda a algo concreto de lo que dijo la persona.
+    function buscarEco(norm) {
+      for (let i = 0; i < ECOS.length; i++) {
+        if (ECOS[i].re.test(norm)) return { indice: i, lineas: ECOS[i].lineas };
+      }
+      return null;
+    }
 
     // Cierre del turno final: reconoce sin dejar ninguna pregunta en el aire.
     const ULTIMO_TURNO = [
@@ -496,7 +585,7 @@
     const TEXTO_UI_SEGUIR = 'Aquí sigo contigo. Cuéntame qué más necesitas poner en palabras hoy.';
     const TEXTO_UI_SOLTADO = 'Soltado. Que siga volando.';
     const TEXTO_YA_ACTIVIDAD = 'Que este ejercicio te acompañe. Cuando quieras, aquí sigo.';
-    const TEXTO_WELCOME = 'Te doy la bienvenida. Este espacio es tuyo: aquí nadie te va a pedir el parte médico ni te va a decir que seas fuerte. ¿Cómo estás hoy y qué es lo que más te pesa ahora mismo?';
+    const TEXTO_WELCOME = 'Hola. Aquí no tienes que ser fuerte ni resumir nada. Cuéntame cómo estás hoy, de verdad.';
 
     function guionVoz() {
       const g = {};
@@ -506,6 +595,12 @@
       }
       g['default_cierre'] = CIERRE_DEFAULT.mensaje + ' ' + CIERRE_DEFAULT.quote;
       ULTIMO_TURNO.forEach(function (x, i) { g['ult_' + i] = x; });
+      for (const t in REFLEJOS) {
+        REFLEJOS[t].forEach(function (x, i) { g['kb_' + t + '_refl' + i] = x; });
+      }
+      ECOS.forEach(function (e, i) {
+        e.lineas.forEach(function (x, j) { g['eco' + i + '_' + j] = x; });
+      });
       g['act_choose'] = TEXTO_ACT_CHOOSE;
       g['act_conversar'] = TEXTO_ACT_CONVERSAR;
       g['act_musica'] = TEXTO_ACT_MUSICA;
@@ -665,7 +760,7 @@
         const w = tokens[i];
         if (w === termino) return true;
         if (termino.length >= 4 && w.indexOf(termino) === 0) return true;
-        if (termino.length >= 4 && w.length >= 4) {
+        if (termino.length >= 4 && w.length >= 4 && w.charAt(0) === termino.charAt(0)) {
           const d = levenshtein(w, termino);
           if (d <= (termino.length >= 8 ? 2 : 1)) return true;
         }
@@ -796,11 +891,19 @@
         temasVistos.add(tema);
         appendBotMessage(knowledgeBase[tema].text, null, 'kb_' + tema + '_text');
       } else {
-        // Continuación (mismo tema o sin palabras clave): reflejo variado, nunca el mismo seguido.
-        const segs = companero.seguimientos;
-        const is = idxSeguimiento % segs.length;
-        appendBotMessage(segs[is], null, 'seg_' + is);
-        idxSeguimiento++;
+        // Continuación: primero responde a algo concreto (eco); si no, a un reflejo
+        // del tema; y si no hay tema, a un reflejo propio del acompañante.
+        const eco = buscarEco(norm);
+        if (eco) {
+          const e = elegirConClave(eco.lineas, 'eco' + eco.indice + '_');
+          appendBotMessage(e.texto, null, e.clave);
+        } else if (tema && REFLEJOS[tema]) {
+          const r = elegirConClave(REFLEJOS[tema], 'kb_' + tema + '_refl');
+          appendBotMessage(r.texto, null, r.clave);
+        } else {
+          const r = elegirConClave(companero.seguimientos, 'seg_');
+          appendBotMessage(r.texto, null, r.clave);
+        }
       }
     }
 
@@ -1038,14 +1141,11 @@
     function addWelcomeMessage() {
       if (messagesDiv.querySelector('.welcome-personalized')) return;
       const quien = (localStorage.getItem('caregiverName') || '').trim();
-      const etapa = etiquetaFase();
-      const faseTxt = etapa ? ' Me quedo contigo en esta etapa: ' + etapa.toLowerCase() + '.' : '';
       const div = document.createElement('div');
       div.className = 'message model welcome-personalized';
       const p = document.createElement('p');
-      p.textContent = 'Te doy la bienvenida' + (quien ? ', ' + quien : '') +
-        '. Este espacio es tuyo: aquí nadie te va a pedir el parte médico ni te va a decir que «seas fuerte».' +
-        faseTxt + ' ¿Cómo estás hoy y qué es lo que más te pesa ahora mismo?';
+      p.textContent = 'Hola' + (quien ? ', ' + quien : '') +
+        '. Aquí no tienes que ser fuerte ni resumir nada. Cuéntame cómo estás hoy, de verdad.';
       div.appendChild(p);
       messagesDiv.appendChild(div);
       scrollAbajo();
