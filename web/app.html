@@ -236,6 +236,30 @@
     .btn-principal { display: block; width: 100%; padding: 12px; margin-top: 10px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
     .hotline { background: var(--bg); border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-bottom: 8px; }
 
+    /* --- Onboarding: elegir acompañante y etapa --- */
+    .pick-label { text-align: left; font-size: 13px; font-weight: 600; color: var(--on-surface); margin: 18px 0 8px; }
+    .companion-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .companion-card {
+      background: var(--bg); border: 1.5px solid var(--outline); border-radius: 14px; padding: 12px 10px;
+      cursor: pointer; text-align: center; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .companion-card:hover { border-color: var(--primary); }
+    .companion-card.selected { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-container); background: #fff; }
+    .companion-emoji { font-size: 30px; line-height: 1; }
+    .companion-name { font-size: 14px; font-weight: 600; color: var(--on-surface); }
+    .companion-style { font-size: 11px; color: var(--on-surface-variant); line-height: 1.3; }
+    .fase-options { display: flex; flex-wrap: wrap; gap: 8px; }
+    .fase-chip {
+      background: var(--bg); border: 1.5px solid var(--outline); border-radius: 18px; padding: 8px 12px;
+      font-family: inherit; font-size: 13px; color: var(--on-surface); cursor: pointer;
+    }
+    .fase-chip:hover { border-color: var(--primary); }
+    .fase-chip.selected { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .avatar-emoji { font-size: 34px; line-height: 1; }
+    .opcion-btn.recomendada { border-color: var(--primary); background: var(--primary-container); color: var(--on-primary); font-weight: 600; }
+    .opcion-btn:disabled { opacity: .55; cursor: default; }
+
     @media (max-width: 480px) {
       .container { margin: 10px; }
       .message { max-width: 90%; }
@@ -258,7 +282,12 @@
     <!-- Onboarding -->
     <div class="onboarding-screen" id="onboarding-screen">
       <h2>Bienvenido/a a Respiro</h2>
-      <p>Para personalizar tu experiencia, ¿cómo quieres llamar a tu acompañante virtual?</p>
+      <p>Un espacio para ti, el que cuida. Elige con quién te sientes cómodo para hablar.</p>
+      <div class="pick-label">Elige a tu acompañante</div>
+      <div class="companion-options" id="companion-options"></div>
+      <div class="pick-label">¿En qué etapa están ustedes?</div>
+      <div class="fase-options" id="fase-options"></div>
+      <div class="pick-label">Nombres</div>
       <input type="text" class="companion-name-input" id="companion-name" value="Alma" aria-label="Nombre del acompañante">
       <input type="text" class="companion-name-input" id="user-name" placeholder="¿Cómo te llamas? (opcional)" aria-label="Tu nombre">
       <button class="start-btn" onclick="startApp()">Comenzar</button>
@@ -268,12 +297,12 @@
     <!-- Chat -->
     <div class="chat-area" id="chat-area">
       <div class="header">
-        <div class="avatar-display">
-          <img src="gemini-svg.svg" alt="Avatar del acompañante" class="avatar-icon" />
+        <div class="avatar-display" aria-hidden="true">
+          <span class="avatar-emoji" id="avatar-emoji">🌿</span>
         </div>
         <div class="avatar-info">
           <h2 id="companion-title" class="editable-name" onclick="editCompanionName()" tabindex="0" role="button" title="Toca para cambiar el nombre">Alma</h2>
-          <p>Acompañante virtual · sin conexión</p>
+          <p id="companion-subtitle">cálida y serena · sin conexión</p>
         </div>
         <div class="header-actions">
           <button class="header-icon-btn" id="home-button" onclick="volverInicio()" title="Volver al inicio (editar tus datos)" aria-label="Volver al inicio">
@@ -374,7 +403,7 @@
     const knowledgeBase = {
       "culpa": {
         keywords: ["culpa", "culpab", "culpar", "culpable", "remordimiento", "arrepent", "egoista", "egoismo", "mal cuidador", "mala cuidadora", "mal padre", "mala madre", "deberia haber", "no hice lo suficiente", "no es suficiente"],
-        text: "Escucho culpa en lo que dices, y tiene todo el sentido: querer un descanso o desear que esto cambie no te hace peor cuidador, al contrario.\n\n¿Qué es lo que más te pesa de esa culpa ahora?",
+        text: "Gracias por confiármelo. Cargar con la sensación de que todo depende de ti desgasta de una manera que no siempre se ve.\n\n¿Qué es lo que más te pesa de eso ahora?",
         cierre: {
           mensaje: "Antes de terminar, quiero dejarte algo contigo.",
           quote: "'El autocuidado del cuidador no es un lujo ni un acto egoísta; es una parte indispensable del esquema de salud del paciente.'",
@@ -385,7 +414,7 @@
       },
       "cansancio": {
         keywords: ["agotad", "agotamiento", "cansad", "cansan", "cansancio", "sueno", "dormir", "duermo", "insomnio", "fatiga", "extenuad", "desvelad", "sin energia", "sin fuerza", "no puedo mas", "exhaust", "rendid", "desgan"],
-        text: "Te noto agotado o agotada, y es esperable: llevar semanas sin descanso desgasta el cuerpo y también la paciencia.\n\n¿Cuándo fue la última vez que pudiste descansar de verdad?",
+        text: "Gracias por decírmelo. Cuando el descanso no llega, el cuerpo y la paciencia se van agotando.\n\n¿Cómo está siendo un día tuyo últimamente?",
         cierre: {
           mensaje: "Antes de cerrar, quiero que te des un respiro de verdad.",
           quote: "'Cuando no puedes pausar el entorno, debes forzar micro-pausas somáticas de 2 minutos durante el día.'",
@@ -396,7 +425,7 @@
       },
       "rabia": {
         keywords: ["rabia", "rabiet", "frustra", "enojad", "enojo", "furia", "furios", "bronca", "impacien", "irritab", "hart", "molest", "molesto", "molesta", "molestia", "cabread", "indigna", "ira"],
-        text: "Siento tu rabia, y la entiendo: sobrepasaste tu límite, y eso no te convierte en una mala persona.\n\n¿Contra qué o contra quién va esa rabia ahora mismo?",
+        text: "Gracias por contármelo. Cuando uno da tanto, es difícil que no se desborde.\n\n¿Qué fue lo que pasó hoy?",
         cierre: {
           mensaje: "Antes de terminar, soltemos juntos un poco de esa carga.",
           quote: "'No reprimas la emoción. Reconócela en silencio: estoy sintiendo rabia porque estoy agotado.'",
@@ -407,7 +436,7 @@
       },
       "soledad": {
         keywords: ["soledad", "solitari", "invisible", "nadie pregunta", "nadie me pregunta", "nadie me ve", "nadie me escucha", "abandonad", "ignorad", "apartad", "no me ven", "no cuentan conmigo", "me siento solo", "me siento sola", "estoy solo", "estoy sola"],
-        text: "Noto que te sientes solo o sola, y no me extraña: sostener todo mientras parece que a nadie le importa cómo estás es agotador.\n\n¿En qué momentos sientes más esa soledad?",
+        text: "Gracias por abrirte. Llevar todo esto sin que nadie pregunte cómo estás pesa mucho.\n\n¿Quién está cerca de ti en estos días?",
         cierre: {
           mensaje: "Antes de irnos, quiero que pongas en palabras lo que necesitas.",
           quote: "'También eres parte de la historia, no solo el soporte. Tu cansancio y tu dolor merecen un lugar.'",
@@ -418,7 +447,7 @@
       },
       "tristeza": {
         keywords: ["triste", "tristeza", "desanimo", "llorar", "lloro", "llanto", "vacio", "desesperanz", "sin animo", "apagad", "melancol", "deprimid", "depresion", "desmotivad", "no le veo sentido"],
-        text: "Te siento triste, y no es debilidad: es la señal de que llevas una carga real y pesada.\n\n¿Qué es lo que más te entristece hoy?",
+        text: "Gracias por confiármelo. Sostener tanto durante tanto tiempo deja el ánimo por el suelo.\n\n¿Qué es lo que más te duele hoy?",
         cierre: {
           mensaje: "Has sostenido mucho hoy. Terminemos con una pausa amable para tu cuerpo.",
           quote: "'Las emociones que no se nombran se acumulan; ponerles nombre es el primer paso para que bajen de intensidad.'",
@@ -429,7 +458,7 @@
       },
       "miedo": {
         keywords: ["miedo", "temeros", "ansiedad", "ansios", "angustia", "angustiad", "panico", "nervios", "preocupad", "preocupacion", "incertidumbre", "insegur", "no se que pasara", "no se que va a pasar", "futuro", "asusta"],
-        text: "Te noto con miedo, y es comprensible: hay mucha incertidumbre y algo que te importa mucho está en juego.\n\n¿Qué es lo que más te preocupa ahora mismo?",
+        text: "Gracias por decírmelo. No saber qué va a pasar con alguien que quieres pesa en el cuerpo.\n\n¿Qué es lo que te tiene más inquieto?",
         cierre: {
           mensaje: "Ya diste un paso importante al reconocerlo. Cerremos volviendo al presente.",
           quote: "'La ansiedad vive en el futuro. Volver al momento presente, aunque sea por un minuto, le devuelve el timón a tu cuerpo.'",
@@ -448,23 +477,56 @@
     let idxSeguimiento = 0;
     let idxUltimoTurno = 0;
 
-    // Reflejos para cuando la persona sigue hablando del mismo tema (nunca se repiten seguidos).
-    const SEGUIMIENTOS = [
-      "Sigo aquí, escuchándote sin prisa. No tienes que ordenarlo ni resumirlo.",
-      "Gracias por seguir abriéndote. Lo que cuentas tiene peso, aunque no siempre lo vean los demás.",
-      "Te leo con atención. Puedes soltarlo así, en partes, como te salga.",
-      "Lo que describes no es poca cosa. Aquí no tienes que minimizarlo.",
-      "Entiendo. Y aunque hoy nadie te lo reconozca, lo que haces cuenta."
-    ];
-
     // Cierre del turno final: reconoce sin dejar ninguna pregunta en el aire.
     const ULTIMO_TURNO = [
-      "Gracias por confiarme todo esto. Reconozco lo que cargas, aunque a veces parezca que nadie lo ve.",
-      "Te escuché en cada parte. Lo que sostienes importa, y hoy tuvo un lugar aquí.",
-      "Gracias por abrirte conmigo. Lo que haces no es poca cosa, aunque no siempre te lo reconozcan."
+      "Gracias por confiarme todo esto. Lo que cargas tiene un peso real.",
+      "Te escuché en cada parte. Aquí tuvo un lugar.",
+      "Gracias por abrirte. No tienes que sostenerlo solo."
     ];
 
-    let companionName = localStorage.getItem('companionName') || 'Alma';
+    // ---------- Acompañantes (estilo + avatar + tono de voz) ----------
+    const COMPANEROS = [
+      { id: 'serena', nombre: 'Alma', emoji: '🌿', estilo: 'cálida y serena', voz: { rate: 0.95, pitch: 1.0 },
+        seguimientos: [
+          "Sigue contándome, sin prisa. No tienes que ordenarlo ni resumirlo.",
+          "Te leo con calma. Lo que cuentas tiene su peso.",
+          "Aquí estoy. Tómate el tiempo que necesites."
+        ] },
+      { id: 'directa', nombre: 'Tomás', emoji: '🧭', estilo: 'directo y práctico', voz: { rate: 1.05, pitch: 0.95 },
+        seguimientos: [
+          "De acuerdo. Cuéntame qué más hay detrás de esto.",
+          "Entiendo. ¿Qué es lo que más te está costando ahora?",
+          "Anotado. Sigue contándome un poco más, si quieres."
+        ] },
+      { id: 'amiga', nombre: 'Lua', emoji: '🌙', estilo: 'como una amiga', voz: { rate: 1.0, pitch: 1.12 },
+        seguimientos: [
+          "Uf, sí. Sigue contándome, te escucho.",
+          "Vale, te leo. Suelta lo que necesites.",
+          "Aquí sigo contigo. ¿Y después qué pasó?"
+        ] },
+      { id: 'firme', nombre: 'Bruno', emoji: '🐻', estilo: 'firme y protector', voz: { rate: 0.92, pitch: 0.85 },
+        seguimientos: [
+          "Te escucho. No tienes que cargar con esto en silencio.",
+          "Sigue, aquí estoy contigo.",
+          "Lo que cuentas importa. Cuéntame más si te ayuda."
+        ] }
+    ];
+
+    // ---------- Etapas (pregunta cerrada del onboarding) ----------
+    const FASES = [
+      { id: 'diagnostico', etiqueta: 'Diagnóstico' },
+      { id: 'preoperatorio', etiqueta: 'Antes de la cirugía' },
+      { id: 'tratamiento', etiqueta: 'Tratamiento (quimio / radio)' },
+      { id: 'postoperatorio', etiqueta: 'Después de la cirugía' },
+      { id: 'larga', etiqueta: 'Cuidados de largo plazo' },
+      { id: 'prefiero', etiqueta: 'Prefiero no decirlo' }
+    ];
+
+    let companero = COMPANEROS.find(function (c) { return c.id === localStorage.getItem('companeroId'); }) || COMPANEROS[0];
+    let fase = localStorage.getItem('fase') || '';
+    function etiquetaFase() { const f = FASES.find(function (x) { return x.id === fase; }); return f ? f.etiqueta : ''; }
+
+    let companionName = localStorage.getItem('companionName') || companero.nombre;
     let historial = [];               // memoria de la conversación (local)
     let respTimer = null;             // respiración guiada en curso
 
@@ -600,16 +662,64 @@
     };
 
     function cerrarCiclo(yaHayActividad, tema) {
-      let datos;
       if (yaHayActividad) {
-        datos = { mensaje: "Que este ejercicio te acompañe. Cuando quieras, aquí sigo para escucharte.", actividad: null };
-      } else {
-        datos = (tema && knowledgeBase[tema] && knowledgeBase[tema].cierre) ? knowledgeBase[tema].cierre : CIERRE_DEFAULT;
+        appendBotMessage("Que este ejercicio te acompañe. Cuando quieras, aquí sigo.");
+        contadorInteracciones = 0;
+        return;
       }
+      const datos = (tema && knowledgeBase[tema] && knowledgeBase[tema].cierre) ? knowledgeBase[tema].cierre : CIERRE_DEFAULT;
       appendBotMessage(datos.mensaje, datos.quote ? { quote: datos.quote, author: datos.author } : null);
-      if (datos.actividad === "desahogo") renderNoteExercise(datos.actividadTexto);
-      else if (datos.actividad === "respiracion") renderBreathingExercise(datos.actividadTexto);
+      renderActivityChoices(datos.actividad);
       contadorInteracciones = 0;
+    }
+
+    // Actividades a elegir. Estos son los ÚNICOS botones de opción, y solo aparecen al cierre.
+    function renderActivityChoices(recomendada) {
+      const div = document.createElement('div');
+      div.className = 'message model';
+      const p = document.createElement('p');
+      p.textContent = 'Elige algo que te venga bien ahora mismo, sin obligación:';
+      div.appendChild(p);
+
+      const cont = document.createElement('div');
+      cont.className = 'opciones';
+      const opciones = [
+        { id: 'respiracion', label: '🌬️ Respirar', rec: recomendada === 'respiracion' },
+        { id: 'desahogo', label: '✍️ Escribir', rec: recomendada === 'desahogo' },
+        { id: 'musica', label: '🎵 Escuchar música', rec: false },
+        { id: 'conversar', label: '💬 Seguir hablando', rec: false }
+      ];
+      opciones.forEach(function (o) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'opcion-btn' + (o.rec ? ' recomendada' : '');
+        b.textContent = o.label + (o.rec ? ' · te puede ayudar' : '');
+        b.addEventListener('click', function () { elegirActividad(o.id, b); });
+        cont.appendChild(b);
+      });
+      div.appendChild(cont);
+      messagesDiv.appendChild(div);
+      scrollAbajo();
+    }
+
+    function elegirActividad(id, btn) {
+      messagesDiv.querySelectorAll('.opciones .opcion-btn').forEach(function (b) { b.disabled = true; });
+      if (btn) btn.classList.add('recomendada');
+      if (id === 'respiracion') renderBreathingExercise('Vamos con un minuto de respiración: inhala 4, sostén 4 y exhala 6.');
+      else if (id === 'desahogo') renderNoteExercise('Escribe sin filtros lo que llevas encima. Al soltar, se borra.');
+      else if (id === 'musica') renderMusicSuggestion();
+      else appendBotMessage('Me quedo contigo. Cuéntame lo que quieras.');
+    }
+
+    function renderMusicSuggestion() {
+      const div = document.createElement('div');
+      div.className = 'message model';
+      div.innerHTML = '<p>Busca una canción que te calme y déjala sonar sin hacer nada más durante unos minutos. La música regula el cuerpo sin pedirte esfuerzo.</p>';
+      messagesDiv.appendChild(div);
+      scrollAbajo();
+      historial.push({ role: 'model', text: 'Sugerencia: escuchar música para regularse.' });
+      guardarHistorial();
+      speakText('Busca una canción que te calme y déjala sonar unos minutos. La música regula el cuerpo sin pedirte esfuerzo.');
     }
 
     // ---------- Motor ----------
@@ -647,7 +757,8 @@
         appendBotMessage(knowledgeBase[tema].text);
       } else {
         // Continuación (mismo tema o sin palabras clave): reflejo variado, nunca el mismo seguido.
-        appendBotMessage(SEGUIMIENTOS[idxSeguimiento % SEGUIMIENTOS.length]);
+        const segs = companero.seguimientos;
+        appendBotMessage(segs[idxSeguimiento % segs.length]);
         idxSeguimiento++;
       }
     }
@@ -806,34 +917,98 @@
       onboardingScreen.style.display = 'block';
       document.getElementById('companion-name').value = companionName;
       document.getElementById('user-name').value = localStorage.getItem('caregiverName') || '';
+      marcarSeleccion();
       window.scrollTo(0, 0);
     }
 
     function startApp() {
-      const name = (document.getElementById('companion-name').value || '').trim() || 'Alma';
+      const name = (document.getElementById('companion-name').value || '').trim() || companero.nombre;
       const userName = (document.getElementById('user-name').value || '').trim();
       localStorage.setItem('caregiverName', userName);
+      localStorage.setItem('companeroId', companero.id);
+      localStorage.setItem('fase', fase || '');
       companionName = name;
       localStorage.setItem('companionName', name);
 
       onboardingScreen.style.display = 'none';
       chatArea.style.display = 'block';
-      companionTitle.textContent = companionName;
+      aplicarCompanero();
 
       if (!restaurarChat()) addWelcomeMessage();
       userInput.focus();
     }
 
+    // ---------- Onboarding: elegir acompañante y etapa ----------
+    function iniciarOnboarding() {
+      const cont = document.getElementById('companion-options');
+      if (cont) {
+        COMPANEROS.forEach(function (c) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'companion-card';
+          b.dataset.id = c.id;
+          b.innerHTML = '<span class="companion-emoji">' + c.emoji + '</span>' +
+            '<span class="companion-name">' + c.nombre + '</span>' +
+            '<span class="companion-style">' + c.estilo + '</span>';
+          b.addEventListener('click', function () { seleccionarCompanero(c.id); });
+          cont.appendChild(b);
+        });
+      }
+      const contF = document.getElementById('fase-options');
+      if (contF) {
+        FASES.forEach(function (f) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'fase-chip';
+          b.dataset.id = f.id;
+          b.textContent = f.etiqueta;
+          b.addEventListener('click', function () { seleccionarFase(f.id); });
+          contF.appendChild(b);
+        });
+      }
+      marcarSeleccion();
+    }
+
+    function seleccionarCompanero(id) {
+      companero = COMPANEROS.find(function (c) { return c.id === id; }) || companero;
+      const inp = document.getElementById('companion-name');
+      if (inp) inp.value = companero.nombre;
+      marcarSeleccion();
+    }
+
+    function seleccionarFase(id) {
+      fase = (fase === id) ? '' : id;
+      marcarSeleccion();
+    }
+
+    function marcarSeleccion() {
+      document.querySelectorAll('.companion-card').forEach(function (b) { b.classList.toggle('selected', b.dataset.id === companero.id); });
+      document.querySelectorAll('.fase-chip').forEach(function (b) { b.classList.toggle('selected', b.dataset.id === fase); });
+    }
+
+    function aplicarCompanero() {
+      companionTitle.textContent = companionName;
+      const emojiEl = document.getElementById('avatar-emoji');
+      if (emojiEl) emojiEl.textContent = companero.emoji;
+      const sub = document.getElementById('companion-subtitle');
+      if (sub) sub.textContent = companero.estilo + ' · sin conexión';
+    }
+
     function addWelcomeMessage() {
       if (messagesDiv.querySelector('.welcome-personalized')) return;
       const quien = (localStorage.getItem('caregiverName') || '').trim();
+      const etapa = etiquetaFase();
+      const faseTxt = etapa ? ' Me quedo contigo en esta etapa: ' + etapa.toLowerCase() + '.' : '';
       const div = document.createElement('div');
       div.className = 'message model welcome-personalized';
       const p = document.createElement('p');
-      p.textContent = 'Te doy la bienvenida' + (quien ? ', ' + quien : '') + '. Este espacio es tuyo: aquí nadie te va a pedir el parte médico ni te va a decir que «seas fuerte». Antes de cualquier otra cosa, quiero saber de ti: ¿cómo sientes el cuerpo hoy y qué es lo que más te está pesando en este momento?';
+      p.textContent = 'Te doy la bienvenida' + (quien ? ', ' + quien : '') +
+        '. Este espacio es tuyo: aquí nadie te va a pedir el parte médico ni te va a decir que «seas fuerte».' +
+        faseTxt + ' ¿Cómo estás hoy y qué es lo que más te pesa ahora mismo?';
       div.appendChild(p);
       messagesDiv.appendChild(div);
       scrollAbajo();
+      speakText(p.textContent);
     }
 
     function editCompanionName() {
@@ -928,7 +1103,7 @@
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = null;
     let listening = false;
-    let speakAloud = localStorage.getItem('speakAloud') === '1';
+    let speakAloud = localStorage.getItem('speakAloud') !== '0';
 
     const voiceButton = document.getElementById('voice-button');
     const recPanel = document.getElementById('rec-panel');
@@ -970,7 +1145,8 @@
       const limpio = String(text).replace(/[*#`_>]/g, '').replace(/\n+/g, '. ');
       const utter = new SpeechSynthesisUtterance(limpio);
       utter.lang = 'es-MX';
-      utter.rate = 1;
+      utter.rate = companero.voz.rate;
+      utter.pitch = companero.voz.pitch;
       speechSynthesis.speak(utter);
     }
 
@@ -1143,10 +1319,12 @@
       const sb = document.getElementById('speak-button');
       if (sb) sb.classList.toggle('active', speakAloud);
 
+      iniciarOnboarding();
+
       if (!localStorage.getItem('companionName')) {
         onboardingScreen.style.display = 'block';
         const nameInput = document.getElementById('companion-name');
-        if (nameInput && !nameInput.value) nameInput.value = 'Alma';
+        if (nameInput && !nameInput.value) nameInput.value = companero.nombre;
         const userNameInput = document.getElementById('user-name');
         if (userNameInput) userNameInput.value = localStorage.getItem('caregiverName') || '';
       } else {
@@ -1157,7 +1335,7 @@
     function showChat() {
       onboardingScreen.style.display = 'none';
       chatArea.style.display = 'block';
-      companionTitle.textContent = companionName;
+      aplicarCompanero();
       if (!restaurarChat()) addWelcomeMessage();
     }
   </script>
