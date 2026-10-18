@@ -301,7 +301,7 @@
           <span class="avatar-emoji" id="avatar-emoji">🌿</span>
         </div>
         <div class="avatar-info">
-          <h2 id="companion-title" class="editable-name" onclick="editCompanionName()" tabindex="0" role="button" title="Toca para cambiar el nombre">Alma</h2>
+          <h2 id="companion-title" class="editable-name" onclick="editCompanionName()" tabindex="0" role="button" title="Toca para cambiar el nombre o la voz">Alma</h2>
           <p id="companion-subtitle">cálida y serena · sin conexión</p>
         </div>
         <div class="header-actions">
@@ -371,9 +371,13 @@
   <div class="modal-overlay" id="modal-nombre" onclick="if (event.target === this) cerrarModales()">
     <div class="modal">
       <button class="modal-close" onclick="cerrarModales()" aria-label="Cerrar">×</button>
-      <h3>Nombre de tu acompañante</h3>
-      <p class="modal-sub">Así te hablará en cada respuesta.</p>
-      <input type="text" class="companion-name-input" id="nuevo-nombre" maxlength="30" aria-label="Nuevo nombre">
+      <h3>Ajustes de tu acompañante</h3>
+      <p class="modal-sub">Nombre y voz con la que te hablará.</p>
+      <input type="text" class="companion-name-input" id="nuevo-nombre" maxlength="30" aria-label="Nuevo nombre" placeholder="Nombre">
+      <label class="pick-label" for="voz-select">Voz</label>
+      <select class="companion-name-input" id="voz-select" aria-label="Voz del acompañante"></select>
+      <p class="onboarding-note" id="voz-hint"></p>
+      <button class="btn-principal" onclick="probarVoz()">Probar voz</button>
       <button class="btn-principal" onclick="guardarNombre()">Guardar</button>
     </div>
   </div>
@@ -486,25 +490,25 @@
 
     // ---------- Acompañantes (estilo + avatar + tono de voz) ----------
     const COMPANEROS = [
-      { id: 'serena', nombre: 'Alma', emoji: '🌿', estilo: 'cálida y serena', voz: { rate: 0.95, pitch: 1.0 },
+      { id: 'serena', nombre: 'Alma', emoji: '🌿', estilo: 'cálida y serena', voz: { rate: 0.97, pitch: 1.03 },
         seguimientos: [
           "Sigue contándome, sin prisa. No tienes que ordenarlo ni resumirlo.",
           "Te leo con calma. Lo que cuentas tiene su peso.",
           "Aquí estoy. Tómate el tiempo que necesites."
         ] },
-      { id: 'directa', nombre: 'Tomás', emoji: '🧭', estilo: 'directo y práctico', voz: { rate: 1.05, pitch: 0.95 },
+      { id: 'directa', nombre: 'Tomás', emoji: '🧭', estilo: 'directo y práctico', voz: { rate: 1.03, pitch: 1.0 },
         seguimientos: [
           "De acuerdo. Cuéntame qué más hay detrás de esto.",
           "Entiendo. ¿Qué es lo que más te está costando ahora?",
           "Anotado. Sigue contándome un poco más, si quieres."
         ] },
-      { id: 'amiga', nombre: 'Lua', emoji: '🌙', estilo: 'como una amiga', voz: { rate: 1.0, pitch: 1.12 },
+      { id: 'amiga', nombre: 'Lua', emoji: '🌙', estilo: 'como una amiga', voz: { rate: 1.0, pitch: 1.08 },
         seguimientos: [
           "Uf, sí. Sigue contándome, te escucho.",
           "Vale, te leo. Suelta lo que necesites.",
           "Aquí sigo contigo. ¿Y después qué pasó?"
         ] },
-      { id: 'firme', nombre: 'Bruno', emoji: '🐻', estilo: 'firme y protector', voz: { rate: 0.92, pitch: 0.85 },
+      { id: 'firme', nombre: 'Bruno', emoji: '🐻', estilo: 'firme y protector', voz: { rate: 0.95, pitch: 0.98 },
         seguimientos: [
           "Te escucho. No tienes que cargar con esto en silencio.",
           "Sigue, aquí estoy contigo.",
@@ -1015,13 +1019,28 @@
       const campo = document.getElementById('nuevo-nombre');
       if (!campo) return;
       campo.value = companionName;
+      cargarVoces();
       abrirModal('modal-nombre');
       setTimeout(function () { campo.focus(); campo.select(); }, 50);
+    }
+
+    function probarVoz() {
+      if (!window.speechSynthesis) return;
+      const sel = document.getElementById('voz-select');
+      const todas = speechSynthesis.getVoices();
+      const v = sel && todas.find(function (x) { return x.name === sel.value; });
+      if (!v) return;
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance('Hola, aquí estoy contigo. Cuando quieras, cuéntame cómo estás.');
+      u.voice = v; u.lang = v.lang; u.rate = companero.voz.rate; u.pitch = companero.voz.pitch;
+      speechSynthesis.speak(u);
     }
 
     function guardarNombre() {
       const campo = document.getElementById('nuevo-nombre');
       const nuevo = (campo.value || '').trim();
+      const sel = document.getElementById('voz-select');
+      if (sel && sel.value) { localStorage.setItem('vozNombre', sel.value); resolverVoz(); }
       if (!nuevo) return;
       companionName = nuevo;
       localStorage.setItem('companionName', companionName);
@@ -1139,12 +1158,68 @@
       setStatus(speakAloud ? 'Lectura en voz alta activada.' : 'Lectura en voz alta desactivada.');
     }
 
+    // ---- Selección de voz: prefiere una femenina y lo más natural posible ----
+    let vozActual = null;
+    let vocesDisponibles = [];
+    const VOCES_FEMENINAS = ['sabina', 'helena', 'laura', 'dalia', 'mónica', 'monica', 'paulina', 'lucía', 'lucia', 'marisol', 'ximena', 'elvira', 'esperanza', 'carmen', 'isabel', 'sofía', 'sofia', 'valentina', 'camila', 'esperanza', 'female', 'zira'];
+    const VOCES_MASCULINAS = ['raul', 'raúl', 'pablo', 'jorge', 'diego', 'carlos', 'juan', 'álvaro', 'alvaro', 'david', 'miguel', 'javier', 'enrique', 'ricardo', 'male'];
+
+    function puntuarVoz(v) {
+      const n = (v.name || '').toLowerCase();
+      let s = 0;
+      if (/natural|neural/.test(n)) s += 120;   // voces neuronales (p. ej. Edge): las más humanas
+      if (/online/.test(n)) s += 60;
+      if (/google/.test(n)) s += 40;
+      if (VOCES_FEMENINAS.some(function (x) { return n.indexOf(x) !== -1; })) s += 30;
+      if (VOCES_MASCULINAS.some(function (x) { return n.indexOf(x) !== -1; })) s -= 80;
+      if (v.localService) s += 3;
+      return s;
+    }
+
+    function mejorVoz() {
+      const todas = speechSynthesis.getVoices();
+      if (!todas.length) return null;
+      const es = todas.filter(function (v) { return /^es/i.test(v.lang); });
+      const pool = es.length ? es : todas;
+      return pool.slice().sort(function (a, b) { return puntuarVoz(b) - puntuarVoz(a); })[0] || null;
+    }
+
+    function resolverVoz() {
+      const nombre = localStorage.getItem('vozNombre');
+      const todas = speechSynthesis.getVoices();
+      vozActual = (nombre && todas.find(function (v) { return v.name === nombre; })) || mejorVoz();
+    }
+
+    function cargarVoces() {
+      if (!window.speechSynthesis) return;
+      const todas = speechSynthesis.getVoices();
+      vocesDisponibles = todas.filter(function (v) { return /^es/i.test(v.lang); });
+      if (!vocesDisponibles.length) vocesDisponibles = todas;
+      resolverVoz();
+      const sel = document.getElementById('voz-select');
+      if (!sel) return;
+      const guardada = localStorage.getItem('vozNombre') || '';
+      sel.innerHTML = '';
+      vocesDisponibles.forEach(function (v) {
+        const o = document.createElement('option');
+        o.value = v.name;
+        o.textContent = v.name + ' (' + v.lang + ')';
+        sel.appendChild(o);
+      });
+      if (guardada && vocesDisponibles.some(function (v) { return v.name === guardada; })) sel.value = guardada;
+      else if (vozActual) sel.value = vozActual.name;
+      const hint = document.getElementById('voz-hint');
+      if (hint) hint.textContent = vozActual ? 'Voz en uso: ' + vozActual.name : 'Este dispositivo no tiene voces instaladas.';
+    }
+
     function speakText(text) {
       if (!speakAloud || !window.speechSynthesis) return;
       speechSynthesis.cancel();
       const limpio = String(text).replace(/[*#`_>]/g, '').replace(/\n+/g, '. ');
       const utter = new SpeechSynthesisUtterance(limpio);
-      utter.lang = 'es-MX';
+      if (!vozActual) resolverVoz();
+      if (vozActual) { utter.voice = vozActual; utter.lang = vozActual.lang; }
+      else utter.lang = 'es-ES';
       utter.rate = companero.voz.rate;
       utter.pitch = companero.voz.pitch;
       speechSynthesis.speak(utter);
@@ -1318,6 +1393,11 @@
     (function init() {
       const sb = document.getElementById('speak-button');
       if (sb) sb.classList.toggle('active', speakAloud);
+
+      if (window.speechSynthesis) {
+        cargarVoces();
+        speechSynthesis.onvoiceschanged = cargarVoces;
+      }
 
       iniciarOnboarding();
 

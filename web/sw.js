@@ -4,7 +4,7 @@
 // - Todo lo demás se deja pasar a red, sin cachear.
 // Así siempre se ve el HTML más reciente y los cambios llegan con solo recargar.
 
-const CACHE = 'alma-v7';
+const CACHE = 'alma-v8';
 const PRECACHE = [
   './app.html',
   './politica-de-privacidad.html',
