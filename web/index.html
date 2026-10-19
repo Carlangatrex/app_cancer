@@ -858,6 +858,7 @@
 
     // ---------- Motor ----------
     function processInput(inputRaw) {
+      detenerAudio();
       const norm = normalizar(inputRaw);
       const tokens = norm.split(' ').filter(Boolean);
       contadorInteracciones++;
@@ -1329,38 +1330,68 @@
 
     // ---- Audios pregrabados (voz humana) con respaldo en la voz del sistema ----
     // El chat intenta reproducir audio/<acompañante>/<clave>.mp3; si no existe,
-    // cae automáticamente a la voz del sistema (speakText).
+    // cae automáticamente a la voz del sistema. Varias frases del mismo turno
+    // (reconocimiento + cierre + opciones) se encolan y suenan en orden.
     let audioActual = null;
+    let colaAudio = [];
+    let reproduciendoAudio = false;
+    let historialAudio = [];   // claves encoladas en el turno actual (para pruebas)
+    let generacionAudio = 0;
 
     function detenerAudio() {
+      generacionAudio++;
+      colaAudio = [];
+      reproduciendoAudio = false;
+      historialAudio = [];
       if (audioActual) {
         try { audioActual.pause(); } catch (e) { /* nada */ }
         audioActual = null;
       }
-    }
-
-    function reproducirAudio(clave, textoRespaldo) {
-      detenerAudio();
-      const a = new Audio('audio/' + companero.id + '/' + clave + '.mp3');
-      audioActual = a;
-      a.onended = function () { if (audioActual === a) audioActual = null; };
-      a.onerror = function () {
-        if (audioActual !== a) return;
-        audioActual = null;
-        speakText(textoRespaldo);
-      };
-      const p = a.play();
-      if (p && p.catch) p.catch(function () { /* autoplay bloqueado: se queda en silencio */ });
+      if (window.speechSynthesis) speechSynthesis.cancel();
     }
 
     function hablar(clave, texto) {
       if (!speakAloud) return;
-      if (clave) { reproducirAudio(clave, texto); return; }
-      speakText(texto);
+      colaAudio.push({ clave: clave, texto: texto });
+      if (clave) historialAudio.push(clave);
+      if (!reproduciendoAudio) reproducirSiguiente();
     }
 
-    function speakText(text) {
-      if (!speakAloud || !window.speechSynthesis) return;
+    function reproducirSiguiente() {
+      if (!colaAudio.length) { reproduciendoAudio = false; return; }
+      reproduciendoAudio = true;
+      const item = colaAudio.shift();
+      if (item.clave) reproducirAudio(item.clave, item.texto);
+      else speakText(item.texto, reproducirSiguiente);
+    }
+
+    function reproducirAudio(clave, textoRespaldo) {
+      const gen = generacionAudio;
+      const a = new Audio('audio/' + companero.id + '/' + clave + '.mp3');
+      audioActual = a;
+      let terminado = false;
+      function fin() {
+        if (terminado) return;
+        terminado = true;
+        if (gen !== generacionAudio) return;
+        if (audioActual === a) audioActual = null;
+        reproducirSiguiente();
+      }
+      a.onended = fin;
+      a.onerror = function () {
+        if (gen !== generacionAudio) return;
+        if (audioActual === a) audioActual = null;
+        speakText(textoRespaldo, fin);
+      };
+      const p = a.play();
+      if (p && p.catch) p.catch(function () { fin(); /* autoplay bloqueado */ });
+    }
+
+    function speakText(text, alTerminar) {
+      if (!speakAloud || !window.speechSynthesis) {
+        if (alTerminar) alTerminar();
+        return;
+      }
       speechSynthesis.cancel();
       const limpio = String(text).replace(/[*#`_>]/g, '').replace(/\n+/g, '. ');
       const utter = new SpeechSynthesisUtterance(limpio);
@@ -1369,6 +1400,7 @@
       else utter.lang = 'es-ES';
       utter.rate = companero.voz.rate;
       utter.pitch = companero.voz.pitch;
+      if (alTerminar) { utter.onend = alTerminar; utter.onerror = alTerminar; }
       speechSynthesis.speak(utter);
     }
 
