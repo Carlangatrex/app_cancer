@@ -49,7 +49,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    button, select, .quick-prompt, .opcion-btn, .exercise-item { touch-action: manipulation; }
+    button, select, .quick-prompt, .exercise-item { touch-action: manipulation; }
     .container { max-width: 800px; margin: 0 auto; }
 
     /* --- Onboarding --- */
@@ -127,14 +127,6 @@
       background: rgba(255,255,255,0.55); border-radius: 0 8px 8px 0; font-style: italic; font-size: 13px;
     }
     .cita cite { display: block; margin-top: 4px; font-size: 11px; font-style: normal; opacity: 0.85; }
-
-    /* Botones-opción que ofrece el acompañante */
-    .opciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-    .opcion-btn {
-      background: #fff; color: var(--primary); border: 1px solid var(--primary-container);
-      border-radius: 16px; padding: 7px 12px; font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
-    }
-    .opcion-btn:hover { background: var(--primary-container); }
 
     /* Tarjeta de crisis */
     .crisis-card {
@@ -623,9 +615,8 @@
     // Todas las frases fijas del acompañante viven aquí (misma fuente que usa el
     // generador de audios). Cada frase tiene una clave: el chat intenta reproducir
     // audio/<acompañante>/<clave>.mp3 y, si no está, usa la voz del sistema.
-    const TEXTO_ACT_CHOOSE = 'Elige algo que te venga bien ahora mismo, sin obligación:';
-    const TEXTO_ACT_CONVERSAR = 'Me quedo contigo. Cuéntame lo que quieras.';
-    const TEXTO_ACT_MUSICA = 'Busca una canción que te calme y déjala sonar sin hacer nada más durante unos minutos. La música regula el cuerpo sin pedirte esfuerzo.';
+    const TEXTO_SEGUIR = 'Aquí sigo contigo. Si quieres, sigue contándome lo que necesites.';
+    const TEXTO_SEGUIR_POS = 'Me quedo con esto. Si quieres, cuéntame más de ese día.';
     const TEXTO_BREATHE = 'Vamos con un minuto de respiración guiada: inhala 4 segundos, sostén 4 y exhala 6. Apoya los pies y deja caer los hombros.';
     const TEXTO_NOTA = 'Escribe sin filtros lo que llevas encima. Si le das a «Soltar», se borra al instante: es un ritual, nadie lo lee.';
     const TEXTO_UI_SEGUIR = 'Aquí sigo contigo. Cuéntame qué más necesitas poner en palabras hoy.';
@@ -648,9 +639,8 @@
       ECOS.forEach(function (e, i) {
         e.lineas.forEach(function (x, j) { g['eco' + i + '_' + j] = x; });
       });
-      g['act_choose'] = TEXTO_ACT_CHOOSE;
-      g['act_conversar'] = TEXTO_ACT_CONVERSAR;
-      g['act_musica'] = TEXTO_ACT_MUSICA;
+      g['seguir'] = TEXTO_SEGUIR;
+      g['seguir_pos'] = TEXTO_SEGUIR_POS;
       g['breathe'] = TEXTO_BREATHE;
       g['nota'] = TEXTO_NOTA;
       g['ui_seguir'] = TEXTO_UI_SEGUIR;
@@ -846,6 +836,8 @@
       actividadTexto: "Haz esto ahora: inhala 4, sostén 4 y exhala 6."
     };
 
+    // Cierre del ciclo: reconoce lo vivido y deja la puerta abierta para seguir
+    // desahogándose. Sin actividades ni botones: la persona solo necesita hablar.
     function cerrarCiclo(yaHayActividad, tema) {
       if (yaHayActividad) {
         appendBotMessage(TEXTO_YA_ACTIVIDAD, null, 'ya_actividad');
@@ -856,58 +848,9 @@
       const clave = (tema && knowledgeBase[tema] && knowledgeBase[tema].cierre) ? ('kb_' + tema + '_cierre') : 'default_cierre';
       const textoVoz = datos.mensaje + (datos.quote ? ' ' + datos.quote : '');
       appendBotMessage(datos.mensaje, datos.quote ? { quote: datos.quote, author: datos.author } : null, clave, textoVoz);
-      renderActivityChoices(datos.actividad);
+      const positivo = tema === 'alegria';
+      appendBotMessage(positivo ? TEXTO_SEGUIR_POS : TEXTO_SEGUIR, null, positivo ? 'seguir_pos' : 'seguir');
       contadorInteracciones = 0;
-    }
-
-    // Actividades a elegir. Estos son los ÚNICOS botones de opción, y solo aparecen al cierre.
-    function renderActivityChoices(recomendada) {
-      const div = document.createElement('div');
-      div.className = 'message model';
-      const p = document.createElement('p');
-      p.textContent = TEXTO_ACT_CHOOSE;
-      div.appendChild(p);
-
-      const cont = document.createElement('div');
-      cont.className = 'opciones';
-      const opciones = [
-        { id: 'respiracion', label: '🌬️ Respirar', rec: recomendada === 'respiracion' },
-        { id: 'desahogo', label: '✍️ Escribir', rec: recomendada === 'desahogo' },
-        { id: 'musica', label: '🎵 Escuchar música', rec: false },
-        { id: 'conversar', label: '💬 Seguir hablando', rec: false }
-      ];
-      opciones.forEach(function (o) {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'opcion-btn' + (o.rec ? ' recomendada' : '');
-        b.textContent = o.label + (o.rec ? ' · te puede ayudar' : '');
-        b.addEventListener('click', function () { elegirActividad(o.id, b); });
-        cont.appendChild(b);
-      });
-      div.appendChild(cont);
-      messagesDiv.appendChild(div);
-      scrollAbajo();
-      hablar('act_choose', TEXTO_ACT_CHOOSE);
-    }
-
-    function elegirActividad(id, btn) {
-      messagesDiv.querySelectorAll('.opciones .opcion-btn').forEach(function (b) { b.disabled = true; });
-      if (btn) btn.classList.add('recomendada');
-      if (id === 'respiracion') renderBreathingExercise();
-      else if (id === 'desahogo') renderNoteExercise();
-      else if (id === 'musica') renderMusicSuggestion();
-      else appendBotMessage(TEXTO_ACT_CONVERSAR, null, 'act_conversar');
-    }
-
-    function renderMusicSuggestion() {
-      const div = document.createElement('div');
-      div.className = 'message model';
-      div.innerHTML = '<p>' + TEXTO_ACT_MUSICA + '</p>';
-      messagesDiv.appendChild(div);
-      scrollAbajo();
-      historial.push({ role: 'model', text: 'Sugerencia: escuchar música para regularse.' });
-      guardarHistorial();
-      hablar('act_musica', TEXTO_ACT_MUSICA);
     }
 
     // ---------- Motor ----------
@@ -1390,7 +1333,7 @@
     // ---- Audios pregrabados (voz humana) con respaldo en la voz del sistema ----
     // El chat intenta reproducir audio/<acompañante>/<clave>.mp3; si no existe,
     // cae automáticamente a la voz del sistema. Varias frases del mismo turno
-    // (reconocimiento + cierre + opciones) se encolan y suenan en orden.
+    // (reconocimiento + cierre + invitación) se encolan y suenan en orden.
     let audioActual = null;
     let colaAudio = [];
     let reproduciendoAudio = false;
