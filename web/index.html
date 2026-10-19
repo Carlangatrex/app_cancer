@@ -401,6 +401,17 @@
 
     // ---------- Base de conocimiento local (cero costo de API) ----------
     const knowledgeBase = {
+      "alegria": {
+        keywords: ["feliz", "felicidad", "alegre", "alegria", "contento", "contenta", "ilusion", "ilusionad", "esperanza", "esperanzad", "alivio", "aliviad", "orgullo", "orgullos", "buena noticia", "buenas noticias", "me alegra", "me alegro", "que bueno", "que bien", "amor de mi vida", "enamorad", "emocionad", "celebracion", "celebrar"],
+        text: "Qué bueno escuchar eso. Hay días que merecen contarse despacio.\n\n¿Qué fue lo que lo hizo mejor?",
+        cierre: {
+          mensaje: "Qué bueno cerrar en un día así.",
+          quote: "'Las emociones buenas también necesitan espacio. Dejar que duren es parte de cuidarse.'",
+          author: "Dra. Elena Gómez — Psicooncóloga",
+          actividad: "musica",
+          actividadTexto: "Pon una canción que te guste y déjala sonar. Que el día bueno dure un poco más."
+        }
+      },
       "culpa": {
         keywords: ["culpa", "culpab", "culpar", "culpable", "remordimiento", "arrepent", "egoista", "egoismo", "mal cuidador", "mala cuidadora", "mal padre", "mala madre", "deberia haber", "no hice lo suficiente", "no es suficiente"],
         text: "Cargar con la sensación de que todo depende de ti desgasta de una manera que no siempre se ve.\n\n¿Qué es lo que más te pesa de eso ahora?",
@@ -473,6 +484,11 @@
     // Cuando la persona sigue hablando del mismo tema, en vez de un "cuéntame más"
     // genérico se le devuelve algo que responde a lo que siente.
     const REFLEJOS = {
+      alegria: [
+        "Me alegra de verdad. Vale la pena detenerse en esto.",
+        "Hay días que merecen contarse despacio, sin que nada los apure.",
+        "Qué bueno que algo te haya hecho bien. Guárdalo."
+      ],
       culpa: [
         "Te exiges como si descansar fuera abandonar. No lo es.",
         "Nadie te enseñó a sostener esto, y aun así lo haces cada día.",
@@ -530,6 +546,29 @@
       ] },
       { re: /hospital|medic|quimio|radio|doctor|cita|analitic|tratamiento/, lineas: [
         "El hospital ya agota por sí solo."
+      ] },
+      { re: /habl(e|ar|amos).{0,30}(amor|pareja|novio|novia|esposo|esposa|marido)|(vi|ver|visite|abrace|estuve con).{0,25}(amor|pareja|novio|novia|esposo|esposa|marido|hijo|hija|mama|papa|familia)/, lineas: [
+        "Qué bueno que pudiste estar con esa persona.",
+        "Esos momentos con la gente que quieres son los que sostienen."
+      ] },
+      { re: /lo logre|lo consegui|al fin (pude|logre|consegui)|salio bien|me salio bien|\btermine\b/, lineas: [
+        "Lo lograste. Eso merece reconocerse.",
+        "Qué bueno que salió. Disfrútalo."
+      ] },
+      { re: /me siento mejor|estoy mejor|un poco mejor|mas tranquil|mas livian/, lineas: [
+        "Me alegra oír eso. ¿Qué crees que te está ayudando?",
+        "Qué bueno. Vale la pena notar qué te hizo bien."
+      ] },
+      { re: /gracias|te agradezco/, lineas: [
+        "A ti por abrirte conmigo."
+      ] },
+      { re: /\bno se\b|\bno lo se\b|\bno tengo claro\b|no se que hacer/, lineas: [
+        "No hace falta tenerlo claro para hablarlo.",
+        "Está bien no saber. Vamos viéndolo juntos."
+      ] },
+      { re: /\bya lo se\b|\bya se\b|\blo se\b|\bya lo sabia\b/, lineas: [
+        "A veces saberlo no basta. ¿Qué te está ayudando de verdad?",
+        "Sí. ¿Y qué parte te cuesta más?"
       ] }
     ];
 
@@ -573,6 +612,13 @@
       "Gracias por abrirte. No tienes que sostenerlo solo."
     ];
 
+    // Variante para cuando la conversación fue buena: no forzar un tono sombrío.
+    const ULTIMO_TURNO_POS = [
+      "Qué bueno que hoy sea un día así.",
+      "Me alegra haber estado en esta conversación contigo.",
+      "Guárdate este día. Te lo mereces."
+    ];
+
     // ---------- Guion de voz ----------
     // Todas las frases fijas del acompañante viven aquí (misma fuente que usa el
     // generador de audios). Cada frase tiene una clave: el chat intenta reproducir
@@ -595,6 +641,7 @@
       }
       g['default_cierre'] = CIERRE_DEFAULT.mensaje + ' ' + CIERRE_DEFAULT.quote;
       ULTIMO_TURNO.forEach(function (x, i) { g['ult_' + i] = x; });
+      ULTIMO_TURNO_POS.forEach(function (x, i) { g['ultpos_' + i] = x; });
       for (const t in REFLEJOS) {
         REFLEJOS[t].forEach(function (x, i) { g['kb_' + t + '_refl' + i] = x; });
       }
@@ -618,27 +665,31 @@
     const COMPANEROS = [
       { id: 'serena', emoji: '🌿', estilo: 'cálida y serena', vozIndice: 0, voz: { rate: 0.97, pitch: 1.06 },
         seguimientos: [
-          "Sigue contándome, sin prisa. No tienes que ordenarlo ni resumirlo.",
-          "Te leo con calma. Lo que cuentas tiene su peso.",
-          "Aquí estoy. Tómate el tiempo que necesites."
+          "Te escucho. Cuéntame más de eso.",
+          "¿Y cómo te sientes con todo esto?",
+          "Vaya. Sigue contándome, me interesa.",
+          "Se nota que eso te importa. ¿Qué más hay?"
         ] },
       { id: 'directa', emoji: '🧭', estilo: 'directa y práctica', vozIndice: 1, voz: { rate: 1.05, pitch: 1.0 },
         seguimientos: [
-          "De acuerdo. Cuéntame qué más hay detrás de esto.",
-          "Entiendo. ¿Qué es lo que más te está costando ahora?",
-          "Anotado. Sigue contándome un poco más, si quieres."
+          "Entiendo. ¿Y qué pasó después?",
+          "¿Qué es lo que más te está costando ahora?",
+          "Vale. Cuéntame un poco más.",
+          "¿Cómo lo estás llevando?"
         ] },
       { id: 'amiga', emoji: '🌙', estilo: 'cercana, como una amiga', vozIndice: 2, voz: { rate: 1.0, pitch: 1.12 },
         seguimientos: [
-          "Uf, sí. Sigue contándome, te escucho.",
-          "Vale, te leo. Suelta lo que necesites.",
-          "Aquí sigo contigo. ¿Y después qué pasó?"
+          "Uf, cuéntame. Te escucho.",
+          "¿En serio? ¿Y qué más?",
+          "Qué fuerte. Sigue contándome.",
+          "¿Y tú cómo estás con todo eso?"
         ] },
       { id: 'firme', emoji: '🐻', estilo: 'firme y protectora', vozIndice: 3, voz: { rate: 0.94, pitch: 0.97 },
         seguimientos: [
-          "Te escucho. No tienes que cargar con esto en silencio.",
-          "Sigue, aquí estoy contigo.",
-          "Lo que cuentas importa. Cuéntame más si te ayuda."
+          "Te escucho. Sigue.",
+          "Cuéntame más. Aquí estoy.",
+          "Eso importa. ¿Qué más hay?",
+          "¿Cómo lo llevas?"
         ] }
     ];
 
@@ -778,7 +829,10 @@
     function detectarTema(norm, tokens) {
       for (const tema in knowledgeBase) {
         const ks = knowledgeBase[tema].keywords || [];
-        if (tieneAlguno(norm, tokens, ks)) return tema;
+        if (!tieneAlguno(norm, tokens, ks)) continue;
+        // "No estoy feliz" no es alegría: que sigan mirándose los demás temas.
+        if (tema === 'alegria' && /\bno\b.{0,15}\b(feliz|content|alegre)\b/.test(norm)) continue;
+        return tema;
       }
       return null;
     }
@@ -881,10 +935,15 @@
 
       if (esUltima) {
         // Último turno: solo reconocimiento (sin pregunta), y enseguida el cierre.
-        const iu = idxUltimoTurno % ULTIMO_TURNO.length;
-        appendBotMessage(ULTIMO_TURNO[iu], null, 'ult_' + iu);
+        // Si la conversación fue positiva, el tono también lo es.
+        const activo = tema || ultimoTema;
+        const positivo = activo === 'alegria';
+        const repertorio = positivo ? ULTIMO_TURNO_POS : ULTIMO_TURNO;
+        const pref = positivo ? 'ultpos_' : 'ult_';
+        const iu = idxUltimoTurno % repertorio.length;
+        appendBotMessage(repertorio[iu], null, pref + iu);
         idxUltimoTurno++;
-        cerrarCiclo(false, tema || ultimoTema);
+        cerrarCiclo(false, activo);
         return;
       }
 
