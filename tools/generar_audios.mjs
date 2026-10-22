@@ -86,11 +86,15 @@ async function main() {
 
   console.log('A generar: ' + trabajos.length + ' clips (' + datos.comps.length + ' voces).');
 
-  let hechos = 0, fallos = 0;
+  let hechos = 0, fallos = 0, omitidos = 0;
   async function correr(j) {
     const dir = path.join(SALIDA, j.companion);
     fs.mkdirSync(dir, { recursive: true });
     const destino = path.join(dir, j.clave + '.mp3');
+    if (process.env.FORZAR !== '1' && fs.existsSync(destino) && fs.statSync(destino).size > 500) {
+      omitidos++;
+      return;
+    }
     try {
       await new Promise(res => setImmediate(res));
       generarClip(j.texto, j.voz, destino);
@@ -106,7 +110,7 @@ async function main() {
   async function worker() { while (idx < trabajos.length) { const j = trabajos[idx++]; await correr(j); } }
   await Promise.all(Array.from({ length: CONCURRENCIA }, worker));
 
-  console.log('Listo. Generados ' + hechos + ', fallos ' + fallos + '. Carpeta: ' + SALIDA);
+  console.log('Listo. Generados ' + hechos + ', omitidos ' + omitidos + ', fallos ' + fallos + '. Carpeta: ' + SALIDA);
 }
 
 try {

@@ -517,7 +517,7 @@
     // Si la persona menciona algo concreto (dormir, estrés, dolor…), se le responde
     // a eso y no a un tema genérico. Los patrones van sobre texto normalizado.
     const ECOS = [
-      { re: /duerm|dorm|sueno|insomn|desvel|noche|trasnoch|descans/, lineas: [
+      { re: /duerm|dorm|sueno|insomn|desvel|trasnoch|no descans|sin descans|noche/, lineas: [
         "Dormir mal lo cambia todo; el cuerpo pasa factura.",
         "Las noches sin descanso se pagan durante todo el día."
       ] },
@@ -525,7 +525,7 @@
         "Vivir con esa presión encima agota aunque no te muevas.",
         "Cuando todo se junta, hasta respirar parece una tarea más."
       ] },
-      { re: /duele|dolor|enferm|mal cuerpo/, lineas: [
+      { re: /(me|le|les|te) duele (el|la|los|las|un|una)? ?(cabeza|espalda|pierna|piernas|brazo|brazos|estomago|pecho|garganta|cuello|cuerpo|hueso|huesos)|tengo dolor|tiene dolor|dolor de|mucho dolor|enferm/, lineas: [
         "El cuerpo también carga lo que la cabeza no dice."
       ] },
       { re: /no puedo mas|ya no puedo|no aguanto|al limite|no doy mas/, lineas: [
@@ -561,8 +561,363 @@
       { re: /\bya lo se\b|\bya se\b|\blo se\b|\bya lo sabia\b/, lineas: [
         "A veces saberlo no basta. ¿Qué te está ayudando de verdad?",
         "Sí. ¿Y qué parte te cuesta más?"
+      ] },
+      { re: /(verla|verlo|verle) (asi|sufrir|mal)|me duele (verla|verlo)|sufre mucho|la veo (mal|sufrir)|lo veo (mal|sufrir)/, lineas: [
+        "Ver sufrir a alguien que quieres también te deja marca.",
+        "El amor también duele cuando no puedes quitarle el dolor al otro."
       ] }
     ];
+
+    // ---------- Respuestas compuestas ----------
+    // Cada turno se arma con una devolución (lo que se reconoce) y una pregunta
+    // (o una validación). Al combinar piezas distintas, la charla no suena a frase fija.
+    const DEVOLUCIONES = {
+      culpa: [
+        "Cuidar también cansa, y cansarte no le quita valor a lo que haces.",
+        "Descansar no es abandonar; a veces es lo que te permite seguir.",
+        "Te estás midiendo con una vara imposible: la de estar siempre disponible.",
+        "Pensar en ti un rato no te hace egoísta.",
+        "La culpa suele aparecer justo cuando necesitas parar."
+      ],
+      cansancio: [
+        "Llevas mucho tiempo tirando de una fuerza que ya no tienes.",
+        "No es flojera: es un cuerpo que lleva demasiado tiempo sosteniendo.",
+        "El agotamiento de cuidar no se ve, pero se siente en todo.",
+        "Cuidar sin pausas te va dejando sin bordes.",
+        "Hay un cansancio que no se arregla solo con dormir."
+      ],
+      rabia: [
+        "La rabia también es una forma de decir basta.",
+        "No estás exagerando: hay cosas que indignan.",
+        "A veces el enojo es lo que queda cuando ya no puedes con la impotencia.",
+        "Tener rabia no te hace mala persona; te hace alguien al límite.",
+        "Esa rabia tiene sentido, aunque no siempre se pueda decir en voz alta."
+      ],
+      soledad: [
+        "Cuidar puede ser muy solitario, incluso con gente alrededor.",
+        "No es que no quieras compañía; es que necesitas que alguien te vea de verdad.",
+        "Hay una soledad que aparece cuando todos preguntan por el paciente y no por ti.",
+        "Sentirte invisible desgasta tanto como el cuidado mismo.",
+        "No tener con quién soltar esto pesa."
+      ],
+      tristeza: [
+        "La tristeza también es una forma de amor que no cabe en otra parte.",
+        "No todo se puede sostener con entereza.",
+        "Hay días en que el ánimo se cae y no hace falta explicarlo.",
+        "Llorar o querer llorar no es debilidad; es que llevas mucho.",
+        "La tristeza no siempre pide solución; a veces pide compañía."
+      ],
+      miedo: [
+        "El miedo aparece cuando algo importante está en juego.",
+        "No saber qué va a pasar cansa más que lo que ya pasó.",
+        "Tener miedo no es falta de fe; es estar alerta por alguien que quieres.",
+        "La incertidumbre se mete en todo y no deja descansar.",
+        "El cuerpo se tensa cuando siente que todo depende de esto."
+      ],
+      alegria: [
+        "Qué bueno que algo te haya hecho bien; también eso es parte de ti.",
+        "Los días buenos merecen detenerse, aunque el resto siga pesando.",
+        "Alegrarte no le quita seriedad a lo que vives.",
+        "Hay que dejar que lo bueno dure un poco.",
+        "Me alegra que hoy haya algo de luz."
+      ]
+    };
+
+    const PREGUNTAS = {
+      culpa: [
+        "¿Qué es lo que te hace sentir que no estás haciendo suficiente?",
+        "¿De dónde viene esa exigencia que te pides?",
+        "¿Qué te dirías si fueras tu propia amiga?",
+        "¿Hay algo que te estés reprochando y no hayas dicho en voz alta?",
+        "¿Cuándo fue la última vez que hiciste algo solo para ti?"
+      ],
+      cansancio: [
+        "¿Qué es lo que más te está quitando fuerzas ahora mismo?",
+        "¿Cómo es un día tuyo, de principio a fin?",
+        "¿Hay algún momento del día en que puedas parar, aunque sea unos minutos?",
+        "¿Qué parte del cuidado te pesa más?",
+        "¿Hace cuánto que no descansas de verdad?"
+      ],
+      rabia: [
+        "¿Qué es lo que más te enfurece de esta situación?",
+        "¿Con quién estás más enojado: con la enfermedad, con el entorno o contigo?",
+        "¿Puedes contarme qué pasó justo antes de sentir esa rabia?",
+        "¿Cómo sacas eso cuando no hay nadie delante?",
+        "¿Hay algo que necesites decir y no estés pudiendo?"
+      ],
+      soledad: [
+        "¿Quién sabe de verdad cómo estás tú?",
+        "¿Hay alguien con quien puedas hablar sin tener que explicarte?",
+        "¿Qué es lo que más te falta de la gente que te rodea?",
+        "¿Cuándo empezaste a sentirte así?",
+        "¿Qué necesitarías de alguien hoy?"
+      ],
+      tristeza: [
+        "¿Qué es lo que más te duele de todo esto?",
+        "¿Hay algo que se te venga a la cabeza y no hayas podido decir?",
+        "¿Cómo es la tristeza hoy: pesada, callada, con ganas de llorar?",
+        "¿Qué te gustaría que alguien entendiera sin que tengas que explicarlo?",
+        "¿Hay algún recuerdo que esté apareciendo más que otros?"
+      ],
+      miedo: [
+        "¿Qué es lo que más te asusta de lo que viene?",
+        "¿Qué escenario te ronda la cabeza?",
+        "¿Qué parte del futuro es la que más te inquieta?",
+        "¿Cómo está tu cuerpo cuando aparece ese miedo?",
+        "¿Qué te ayuda un poco a volver al presente?"
+      ],
+      alegria: [
+        "¿Qué fue lo que pasó?",
+        "¿Cómo te diste cuenta de que te sentías bien?",
+        "¿Quieres contarme ese momento con más detalle?",
+        "¿Con quién compartiste esa alegría?",
+        "¿Qué te gustaría guardar de hoy?"
+      ]
+    };
+
+    const VALIDACIONES = {
+      culpa: [
+        "Lo que haces alcanza, aunque a veces no se sienta así.",
+        "No tienes que poder con todo para merecer descanso."
+      ],
+      cansancio: [
+        "No tienes que poder con todo hoy.",
+        "El agotamiento no te hace menos capaz."
+      ],
+      rabia: [
+        "Tu rabia tiene sentido.",
+        "No tienes que tragarte esto."
+      ],
+      soledad: [
+        "Aquí estoy, y no tienes que explicarme nada.",
+        "No tienes que sostener esto en silencio."
+      ],
+      tristeza: [
+        "Está bien no estar bien.",
+        "No tienes que levantar el ánimo ahora."
+      ],
+      miedo: [
+        "Puedes tener miedo. No tienes que resolverlo ahora.",
+        "Tener miedo no es exagerar."
+      ],
+      alegria: [
+        "Me alegra mucho leerte.",
+        "Qué bien que puedas decirlo."
+      ]
+    };
+
+    // Situaciones concretas: si aparece una, se responde a eso y no a la emoción en general.
+    const ESCENAS = {
+      alimentacion: {
+        re: /\b(comer|come|comio|aliment|apetito|bocado)\b/,
+        devoluciones: [
+          "Ver que no quiere comer desespera, sobre todo cuando sientes que depende de ti.",
+          "Cada comida que rechaza se siente como un fracaso, aunque no lo sea."
+        ],
+        preguntas: [
+          "¿Te dijo por qué no quería, o fue de repente?",
+          "¿Qué es lo que más te preocupa de que no esté comiendo?"
+        ]
+      },
+      sueno: {
+        re: /\b(dormir|duerme|durmio|sueno|insomnio|desvel|noche|noches|trasnoch)\b/,
+        devoluciones: [
+          "Las noches sin dormir te dejan sin fuerzas para todo lo demás.",
+          "Cuando el descanso no llega, el cuerpo y la paciencia se van gastando."
+        ],
+        preguntas: [
+          "¿Qué es lo que te despierta o no te deja descansar?",
+          "¿Cómo son tus noches últimamente?"
+        ]
+      },
+      dolor: {
+        re: /((me|le|les|te) duele (el|la|los|las|un|una)? ?(cabeza|espalda|pierna|piernas|brazo|brazos|estomago|pecho|garganta|cuello|cuerpo|hueso|huesos|todo)|tengo dolor|tiene dolor|dolor de|mucho dolor|dolores)/,
+        devoluciones: [
+          "Que le duela y no puedas quitárselo es de las cosas más impotentes.",
+          "El dolor de alguien que quieres también se queda contigo."
+        ],
+        preguntas: [
+          "¿Cómo está llevando el dolor hoy?",
+          "¿Hay algo que lo alivie, aunque sea un poco?"
+        ]
+      },
+      hospital: {
+        re: /\b(hospital|urgencia|urgencias|consulta|medico|medica|doctor|doctora|enfermer|enfermera)\b/,
+        devoluciones: [
+          "Los hospitales desgastan, aunque solo sea esperar.",
+          "Cada visita te pide una entereza que no siempre tienes."
+        ],
+        preguntas: [
+          "¿Qué fue lo que más te pesó de esa visita?",
+          "¿Cómo te sientes después de estar allí?"
+        ]
+      },
+      tratamiento: {
+        re: /\b(quimio|quimioterapia|radio|radioterapia|pastilla|pastillas|medicamento|medicamentos|tratamiento|sesion|sesiones)\b/,
+        devoluciones: [
+          "Cada sesión mueve muchas cosas, también las tuyas.",
+          "El tratamiento ordena la vida entera alrededor suyo."
+        ],
+        preguntas: [
+          "¿Cómo te deja a ti cada tratamiento?",
+          "¿Qué es lo que más te cuesta de esas sesiones?"
+        ]
+      },
+      higiene: {
+        re: /\b(banar|bano|panal|panales|aseo|vestir|higiene)\b/,
+        devoluciones: [
+          "Ocuparte de todo eso cansa de una forma que no se ve.",
+          "Hay cuidados que nadie nombra y que igual desgastan."
+        ],
+        preguntas: [
+          "¿Hay algo de eso que te resulte especialmente pesado?",
+          "¿Quién te ayuda con esas cosas?"
+        ]
+      },
+      movilidad: {
+        re: /\b(caminar|camina|levantar|levanta|silla|cama)\b/,
+        devoluciones: [
+          "Acompañar cada movimiento exige una atención que agota.",
+          "Estar pendiente de que no se caiga no te deja descansar."
+        ],
+        preguntas: [
+          "¿Cómo se está moviendo estos días?",
+          "¿Qué es lo que más te preocupa cuando se levanta?"
+        ]
+      },
+      dinero: {
+        re: /\b(dinero|gasto|gastos|pagar|costear|economia|plata)\b/,
+        devoluciones: [
+          "La preocupación por el dinero se mezcla con todo lo demás y no deja respirar.",
+          "Hacer cuentas mientras cuidas es una carga que no se ve."
+        ],
+        preguntas: [
+          "¿Qué es lo que más te preocupa de eso ahora?",
+          "¿Con quién puedes hablarlo?"
+        ]
+      },
+      trabajo: {
+        re: /\b(trabajo|trabajar|jefe|jefa|turno|turnos|empleo|oficina)\b/,
+        devoluciones: [
+          "Sostener el trabajo y el cuidado a la vez te deja sin margen.",
+          "El trabajo no entiende de lo que pasa en casa, y eso cansa."
+        ],
+        preguntas: [
+          "¿Cómo estás haciendo para sostener las dos cosas?",
+          "¿Qué pasa con el trabajo cuando hay una urgencia?"
+        ]
+      },
+      casa: {
+        re: /\b(casa|limpiar|quehacer|labores|comida)\b/,
+        devoluciones: [
+          "La casa sigue pidiendo cosas aunque tú ya no tengas fuerzas.",
+          "Las tareas de cada día se acumulan cuando el cuerpo ya no da."
+        ],
+        preguntas: [
+          "¿Qué es lo que más se te acumula?",
+          "¿Hay alguien que pueda quitarte algo de encima?"
+        ]
+      },
+      estudios: {
+        re: /\b(estudiar|estudio|estudios|colegio|universidad|examen|examenes)\b/,
+        devoluciones: [
+          "Los estudios no esperan, aunque tú necesites parar.",
+          "Estudiar con todo esto encima te parte en dos."
+        ],
+        preguntas: [
+          "¿Cómo lo estás llevando con lo demás?",
+          "¿Qué es lo que más te cuesta sostener?"
+        ]
+      },
+      familia: {
+        re: /\b(familia|familiar|familiares)\b/,
+        devoluciones: [
+          "La familia puede acompañar y también cansar.",
+          "Las cosas con la familia se mezclan con el cuidado y pesan doble."
+        ],
+        preguntas: [
+          "¿Quién te está ayudando de verdad?",
+          "¿Cómo son los días con ellos?"
+        ]
+      },
+      diagnostico: {
+        re: /\b(diagnostico|diagnostico|resultado|resultados|biopsia|informe|prueba|pruebas)\b/,
+        devoluciones: [
+          "Esperar resultados es una de las formas más duras de la incertidumbre.",
+          "Un diagnóstico mueve el piso, aunque ya lo esperaras."
+        ],
+        preguntas: [
+          "¿Qué es lo que más te inquieta de lo que pueda venir?",
+          "¿Con quién hablas de eso?"
+        ]
+      }
+    };
+
+    // Personas mencionadas: una apertura breve que demuestra que se escuchó.
+    const PERSONAS = [
+      { id: 'mama', re: /\b(mi )?(mama|madre|mami)\b/, aperturas: [
+        "Cuidar a tu mamá te está cambiando por dentro.",
+        "Pensar en tu mamá te mueve cosas de toda la vida."
+      ] },
+      { id: 'papa', re: /\b(mi )?(papa|padre|papi)\b/, aperturas: [
+        "Cuidar a tu papá te está pidiendo más de lo que muestras.",
+        "Ver a tu papá así remueve cosas que no se dicen."
+      ] },
+      { id: 'hijo', re: /\b(mi )?(hijo|hijos)\b/, aperturas: [
+        "Ver a tu hijo así te toca algo muy hondo.",
+        "Cuidar a tu hijo te pide una fuerza que no debería tocarte."
+      ] },
+      { id: 'hija', re: /\b(mi )?(hija|hijas)\b/, aperturas: [
+        "Ver a tu hija así te toca algo muy hondo.",
+        "Cuidar a tu hija te pide una fuerza que no debería tocarte."
+      ] },
+      { id: 'pareja', re: /\b(mi )?(pareja|esposo|esposa|marido|novio|novia)\b/, aperturas: [
+        "Ver sufrir a tu pareja toca todo lo que son juntos.",
+        "Acompañar a tu pareja así también te cambia a ti."
+      ] },
+      { id: 'hermano', re: /\b(mi )?(hermano|hermanos)\b/, aperturas: [
+        "Acompañar a tu hermano te devuelve cosas de toda la vida.",
+        "Ver a tu hermano así te mueve cosas que no esperabas."
+      ] },
+      { id: 'hermana', re: /\b(mi )?(hermana|hermanas)\b/, aperturas: [
+        "Acompañar a tu hermana te devuelve cosas de toda la vida.",
+        "Ver a tu hermana así te mueve cosas que no esperabas."
+      ] },
+      { id: 'abuelo', re: /\b(mi )?(abuelo|abuelos)\b/, aperturas: [
+        "Cuidar a tu abuelo te conecta con cosas muy antiguas.",
+        "Ver a tu abuelo así no es fácil."
+      ] },
+      { id: 'abuela', re: /\b(mi )?(abuela|abuelas)\b/, aperturas: [
+        "Cuidar a tu abuela te conecta con cosas muy antiguas.",
+        "Ver a tu abuela así no es fácil."
+      ] },
+      { id: 'amigo', re: /\b(mi )?(amigo|amiga|amigos|amigas)\b/, aperturas: [
+        "Acompañar a tu amigo dice mucho de lo que son.",
+        "Ver sufrir a tu amigo también te deja marca."
+      ] },
+      { id: 'persona', re: /\b(paciente|enfermo|enferma)\b/, aperturas: [
+        "Cuidar a la persona que quieres te está pidiendo mucho.",
+        "Lo que haces por esa persona no siempre se ve."
+      ] }
+    ];
+
+    const GENERICOS = {
+      devoluciones: [
+        "Te escucho.",
+        "Sigo aquí contigo.",
+        "Lo que dices importa.",
+        "No hace falta que lo tengas claro para contármelo.",
+        "Estoy contigo."
+      ],
+      preguntas: [
+        "¿Qué es lo que más te pesa ahora?",
+        "Cuéntame un poco más de eso.",
+        "¿Cómo te sientes mientras lo dices?",
+        "¿Qué necesitas poner en palabras hoy?",
+        "¿Por dónde te gustaría empezar?",
+        "¿Qué se te viene primero cuando piensas en esto?"
+      ]
+    };
 
     // ---------- Estado del motor ----------
     let contadorInteracciones = 0;
@@ -595,6 +950,72 @@
         if (ECOS[i].re.test(norm)) return { indice: i, lineas: ECOS[i].lineas };
       }
       return null;
+    }
+
+    function buscarEscena(norm) {
+      for (const id in ESCENAS) {
+        if (ESCENAS[id].re.test(norm)) return id;
+      }
+      return null;
+    }
+
+    function buscarPersona(norm) {
+      for (let i = 0; i < PERSONAS.length; i++) {
+        if (PERSONAS[i].re.test(norm)) return PERSONAS[i];
+      }
+      return null;
+    }
+
+    // Arma la respuesta del turno con piezas distintas: situación concreta, eco,
+    // persona mencionada, devolución emocional y pregunta (o validación).
+    function componerRespuesta(tema, norm, esNueva) {
+      const partes = [];
+      const escena = (tema === 'alegria') ? null : buscarEscena(norm);
+      if (escena) {
+        const personaEscena = buscarPersona(norm);
+        if (personaEscena && Math.random() < 0.3) {
+          partes.push(elegirConClave(personaEscena.aperturas, 'per_' + personaEscena.id + '_'));
+        }
+        partes.push(elegirConClave(ESCENAS[escena].devoluciones, 'esc_' + escena + '_dev_'));
+        partes.push(elegirConClave(ESCENAS[escena].preguntas, 'esc_' + escena + '_preg_'));
+        return partes;
+      }
+
+      const eco = buscarEco(norm);
+      if (eco) {
+        const e = elegirConClave(eco.lineas, 'eco' + eco.indice + '_');
+        partes.push(e);
+        if (!/\?$/.test(e.texto)) {
+          const preg = tema
+            ? elegirConClave(PREGUNTAS[tema], 'preg_' + tema + '_')
+            : elegirConClave(GENERICOS.preguntas, 'gen_preg_');
+          partes.push(preg);
+        }
+        return partes;
+      }
+
+      if (!tema) {
+        const personaSuelta = buscarPersona(norm);
+        if (personaSuelta && Math.random() < 0.35) {
+          partes.push(elegirConClave(personaSuelta.aperturas, 'per_' + personaSuelta.id + '_'));
+        }
+        partes.push(elegirConClave(GENERICOS.devoluciones, 'gen_dev_'));
+        partes.push(elegirConClave(GENERICOS.preguntas, 'gen_preg_'));
+        return partes;
+      }
+
+      const persona = (tema !== 'alegria') ? buscarPersona(norm) : null;
+      if (persona && Math.random() < 0.35) {
+        partes.push(elegirConClave(persona.aperturas, 'per_' + persona.id + '_'));
+      }
+      partes.push(elegirConClave(DEVOLUCIONES[tema], 'dev_' + tema + '_'));
+
+      if (!esNueva && Math.random() < 0.3) {
+        partes.push(elegirConClave(VALIDACIONES[tema], 'val_' + tema + '_'));
+      } else {
+        partes.push(elegirConClave(PREGUNTAS[tema], 'preg_' + tema + '_'));
+      }
+      return partes;
     }
 
     // Cierre del turno final: reconoce sin dejar ninguna pregunta en el aire.
@@ -639,6 +1060,20 @@
       ECOS.forEach(function (e, i) {
         e.lineas.forEach(function (x, j) { g['eco' + i + '_' + j] = x; });
       });
+      for (const t in DEVOLUCIONES) {
+        DEVOLUCIONES[t].forEach(function (x, i) { g['dev_' + t + '_' + i] = x; });
+        PREGUNTAS[t].forEach(function (x, i) { g['preg_' + t + '_' + i] = x; });
+        VALIDACIONES[t].forEach(function (x, i) { g['val_' + t + '_' + i] = x; });
+      }
+      for (const e in ESCENAS) {
+        ESCENAS[e].devoluciones.forEach(function (x, i) { g['esc_' + e + '_dev_' + i] = x; });
+        ESCENAS[e].preguntas.forEach(function (x, i) { g['esc_' + e + '_preg_' + i] = x; });
+      }
+      PERSONAS.forEach(function (p) {
+        p.aperturas.forEach(function (x, i) { g['per_' + p.id + '_' + i] = x; });
+      });
+      GENERICOS.devoluciones.forEach(function (x, i) { g['gen_dev_' + i] = x; });
+      GENERICOS.preguntas.forEach(function (x, i) { g['gen_preg_' + i] = x; });
       g['seguir'] = TEXTO_SEGUIR;
       g['seguir_pos'] = TEXTO_SEGUIR_POS;
       g['breathe'] = TEXTO_BREATHE;
@@ -731,7 +1166,7 @@
 
     // Respuesta del acompañante: texto + cita opcional (sin botones: es conversación).
     // `clave` identifica el audio pregrabado; `textoVoz` es lo que se lee si no hay audio.
-    function appendBotMessage(text, extra, clave, textoVoz) {
+    function crearMensajeBot(text, extra) {
       const div = document.createElement('div');
       div.className = 'message model';
 
@@ -756,7 +1191,22 @@
 
       historial.push({ role: 'model', text: text });
       guardarHistorial();
+      return div;
+    }
+
+    function appendBotMessage(text, extra, clave, textoVoz) {
+      const div = crearMensajeBot(text, extra);
       hablar(clave, textoVoz || text);
+      return div;
+    }
+
+    // Varias piezas pregrabadas en un solo mensaje: se leen en orden y el texto
+    // se muestra como una respuesta continua.
+    function appendBotMessagePartes(partes) {
+      const validas = partes.filter(function (p) { return p && p.texto; });
+      const texto = validas.map(function (p) { return p.texto; }).join(' ');
+      const div = crearMensajeBot(texto, null);
+      validas.forEach(function (p) { hablar(p.clave, p.texto); });
       return div;
     }
 
@@ -890,24 +1340,9 @@
         return;
       }
 
-      if (tema && !temasVistos.has(tema)) {
-        temasVistos.add(tema);
-        appendBotMessage(knowledgeBase[tema].text, null, 'kb_' + tema + '_text');
-      } else {
-        // Continuación: primero responde a algo concreto (eco); si no, a un reflejo
-        // del tema; y si no hay tema, a un reflejo propio del acompañante.
-        const eco = buscarEco(norm);
-        if (eco) {
-          const e = elegirConClave(eco.lineas, 'eco' + eco.indice + '_');
-          appendBotMessage(e.texto, null, e.clave);
-        } else if (tema && REFLEJOS[tema]) {
-          const r = elegirConClave(REFLEJOS[tema], 'kb_' + tema + '_refl');
-          appendBotMessage(r.texto, null, r.clave);
-        } else {
-          const r = elegirConClave(companero.seguimientos, 'seg_');
-          appendBotMessage(r.texto, null, r.clave);
-        }
-      }
+      const esNueva = !!tema && !temasVistos.has(tema);
+      if (tema) temasVistos.add(tema);
+      appendBotMessagePartes(componerRespuesta(tema, norm, esNueva));
     }
 
     // ---------- Herramientas dentro del chat ----------
